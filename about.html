@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History & Framework</title>
+    <style>
+        :root { --primary-blue: #0A2540; --secondary-blue: #116466; --accent-teal: #2C9FA3; --light-bg: #F4F7F6; --text-dark: #333333; --text-light: #FFFFFF; --nav-height: 70px; --footer-height: 60px; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: var(--text-dark); height: 100%; }
+        nav { background-color: var(--primary-blue); height: var(--nav-height); padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
+        nav .logo { color: var(--text-light); font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
+        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
+        nav ul li { margin-left: 2rem; }
+        nav ul li a { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 1.1rem; cursor: pointer; transition: color 0.3s ease, text-shadow 0.3s ease; }
+        nav ul li a:hover { color: var(--accent-teal); text-shadow: 0 0 8px rgba(44, 159, 163, 0.6); }
+        .page-wrapper { padding-top: var(--nav-height); min-height: calc(100vh - var(--footer-height)); display: flex; flex-direction: column; }
+        .page-section { flex: 1; padding: 3rem 10%; animation: fadeIn 0.4s ease-in-out; box-sizing: border-box; display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h2 { color: var(--primary-blue); border-bottom: 2px solid var(--accent-teal); padding-bottom: 0.5rem;}
+        footer { background-color: var(--primary-blue); color: var(--text-light); text-align: center; height: var(--footer-height); line-height: var(--footer-height); font-size: 0.9rem; width: 100%; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">BioEcon Models</div>
+        <ul>
+            <li><a href="index.html">Title Page</a></li>
+            <li><a href="about.html">History & Framework</a></li>
+            <li><a href="playground.html">Model Playground</a></li>
+            <li><a href="sources.html">Sources</a></li>
+        </ul>
+    </nav>
+    <div class="page-wrapper">
+        <section id="about" class="page-section">
+            <h2>History & Framework</h2>
+            <p>This project models the bioeconomic dynamics of a population of fish being harvested and the profit produced from the yield. The population follows logistic growth with harvesting, and profit is measured per unit catch.</p>
+            <p>The original system was programmed in Python using the SciPy library for differential equation integration. This web application translates that quantitative mathematical foundation directly into an interactive, browser-based Runge-Kutta numerical solver.</p>
+        </section>
+    </div>
+    <footer>&copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.</footer>
+</body>
+</html>
