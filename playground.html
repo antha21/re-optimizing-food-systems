@@ -3,161 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model Playground</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root { --primary-blue: #0A2540; --secondary-blue: #116466; --accent-teal: #2C9FA3; --light-bg: #F4F7F6; --text-dark: #333333; --text-light: #FFFFFF; --nav-height: 70px; --footer-height: 60px; }
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: var(--text-dark); height: 100%; }
-        nav { background-color: var(--primary-blue); height: var(--nav-height); padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
-        nav .logo { color: var(--text-light); font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
-        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-        nav ul li { margin-left: 2rem; }
-        nav ul li a { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 1.1rem; cursor: pointer; transition: color 0.3s ease, text-shadow 0.3s ease; }
-        nav ul li a:hover { color: var(--accent-teal); text-shadow: 0 0 8px rgba(44, 159, 163, 0.6); }
-        .page-wrapper { padding-top: var(--nav-height); min-height: calc(100vh - var(--footer-height)); display: flex; flex-direction: column; }
-        .page-section { flex: 1; padding: 3rem 10%; animation: fadeIn 0.4s ease-in-out; box-sizing: border-box; display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        h2 { color: var(--primary-blue); border-bottom: 2px solid var(--accent-teal); padding-bottom: 0.5rem;}
-        h3 { color: var(--secondary-blue); }
-        .playground-container { display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
-        .controls { flex: 1; min-width: 250px; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; height: fit-content; }
-        .controls label { font-weight: bold; color: var(--primary-blue); margin-bottom: -0.5rem; }
-        .controls input { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-        .controls button { background-color: var(--accent-teal); color: white; border: none; padding: 1rem; font-size: 1.1rem; font-weight: bold; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; margin-top: 1rem; }
-        .controls button:hover { background-color: var(--secondary-blue); }
-        .visualizer { flex: 2; min-width: 400px; display: flex; flex-direction: column; gap: 2rem; }
-        .chart-box { background-color: white; border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        canvas { max-width: 100%; }
-        footer { background-color: var(--primary-blue); color: var(--text-light); text-align: center; height: var(--footer-height); line-height: var(--footer-height); font-size: 0.9rem; width: 100%; }
-    </style>
-</head>
-<body onload="runSimulation()">
-    <nav>
-        <div class="logo">BioEcon Models</div>
-        <ul>
-            <li><a href="index.html">Title Page</a></li>
-            <li><a href="about.html">History & Framework</a></li>
-            <li><a href="playground.html">Model Playground</a></li>
-            <li><a href="sources.html">Sources</a></li>
-        </ul>
-    </nav>
-    <div class="page-wrapper">
-        <section id="playground" class="page-section">
-            <h2>Section 1.3: The Baseline Bioeconomic Model</h2>
-            <p>Adjust the parameters below to simulate the biological outcomes over a 90-day season. The charts update instantly based on the differential equation: <strong>dP/dt = r*P*(1 - P/K) - q*P*E(t)</strong>.</p>
-            <div class="playground-container">
-                <div class="controls">
-                    <h3>System Parameters</h3>
-                    <label for="val_r">Intrinsic Growth Rate (r)</label>
-                    <input type="number" id="val_r" value="0.05" step="0.01">
-                    <label for="val_k">Carrying Capacity (K)</label>
-                    <input type="number" id="val_k" value="11715" step="1">
-                    <label for="val_q">Catchability Coefficient (q)</label>
-                    <input type="number" id="val_q" value="0.001" step="0.001">
-                    <label for="val_p">Market Price per Unit (p)</label>
-                    <input type="number" id="val_p" value="40" step="1">
-                    <label for="val_c">Operational Cost (c)</label>
-                    <input type="number" id="val_c" value="150" step="1">
-                    <button onclick="runSimulation()">Run Simulation</button>
-                </div>
-                <div class="visualizer">
-                    <div class="chart-box"><canvas id="chart1"></canvas></div>
-                    <div class="chart-box"><canvas id="chart2"></canvas></div>
-                </div>
-            </div>
-        </section>
-    </div>
-    <footer>&copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.</footer>
-
+    <title>Model Playground Hub</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        let chartInstance1 = null; 
-        let chartInstance2 = null;
-
-        function runSimulation() {
-            const r = parseFloat(document.getElementById('val_r').value);
-            const K = parseFloat(document.getElementById('val_k').value);
-            const q = parseFloat(document.getElementById('val_q').value);
-            const p = parseFloat(document.getElementById('val_p').value);
-            const c = parseFloat(document.getElementById('val_c').value);
-
-            const days = 90;
-            const P0 = 9080;
-            const E_min = 5;
-            const E_max = 50;
-
-            function E(t) {
-                return E_min + (E_max - E_min) * Math.sin(Math.PI * t / days);
-            }
-
-            function population_model(t, P) {
-                return r * P * (1 - P / K) - q * P * E(t);
-            }
-
-            const num_points = 500; 
-            const time = new Array(num_points);
-            const population = new Array(num_points);
-            const effort = new Array(num_points);
-            
-            for(let i = 0; i < num_points; i++) {
-                time[i] = (days / (num_points - 1)) * i;
-            }
-
-            population[0] = P0;
-            const dt = time[1] - time[0];
-
-            for(let i = 0; i < num_points - 1; i++) {
-                let t_n = time[i];
-                let P_n = population[i];
-                let k1 = population_model(t_n, P_n);
-                let k2 = population_model(t_n + dt/2, P_n + k1 * dt/2);
-                let k3 = population_model(t_n + dt/2, P_n + k2 * dt/2);
-                let k4 = population_model(t_n + dt, P_n + k3 * dt);
-                population[i+1] = P_n + (dt / 6) * (k1 + 2*k2 + 2*k3 + k4);
-            }
-
-            for(let i = 0; i < num_points; i++) {
-                effort[i] = E(time[i]);
-            }
-
-            const profit_per_catch = new Array(num_points);
-            for(let i = 0; i < num_points; i++) {
-                profit_per_catch[i] = p - c / (q * population[i]);
-            }
-            
-            const timeLabels = time.map(t => t.toFixed(1));
-
-            const ctx1 = document.getElementById('chart1').getContext('2d');
-            if (chartInstance1) chartInstance1.destroy();
-            chartInstance1 = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [
-                        { label: 'Fish Population (P)', data: population, borderColor: '#1f77b4', backgroundColor: 'transparent', yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.1 },
-                        { label: 'Effort E(t)', data: effort, borderColor: '#d62728', borderDash: [5, 5], backgroundColor: 'transparent', yAxisID: 'y1', borderWidth: 2, pointRadius: 0, tension: 0.1 }
-                    ]
-                },
-                options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Bioeconomic Model: Fish Population vs. Fishing Effort Over Time', font: { size: 14 } } },
-                    scales: { x: { title: { display: true, text: 'Time (Days)' }, ticks: {maxTicksLimit: 10} }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Fish Population (P)' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Fishing Effort (E)' }, grid: { drawOnChartArea: false } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navBg: '#0F172A', navHover: '#1E293B', navText: '#F8FAFC', navAccent: '#3B82F6',
+                        mainBg: '#F1F5F9', secBg: '#FFFFFF', altBg: '#E2E8F0',
+                        priAccent: '#2563EB', secAccent: '#06B6D4', hlAccent: '#7C3AED',
+                        textDark: '#0F172A', textMuted: '#475569'
+                    }
                 }
-            });
-
-            const ctx2 = document.getElementById('chart2').getContext('2d');
-            if (chartInstance2) chartInstance2.destroy();
-            chartInstance2 = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [
-                        { label: 'Fish Population (P)', data: population, borderColor: '#1f77b4', backgroundColor: 'transparent', yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.1 },
-                        { label: 'Profit / Catch', data: profit_per_catch, borderColor: '#2ca02c', borderDash: [5, 5], backgroundColor: 'transparent', yAxisID: 'y1', borderWidth: 2, pointRadius: 0, tension: 0.1 }
-                    ]
-                },
-                options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Bioeconomic Model: Fish Population vs. Profit Margins Over a 90-Day Season', font: { size: 14 } } },
-                    scales: { x: { title: { display: true, text: 'Time (Days)' }, ticks: {maxTicksLimit: 10} }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Fish Population (P)' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Profit per Unit Catch ($)' }, grid: { drawOnChartArea: false } } }
-                }
-            });
+            }
         }
     </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--main-bg); 
+            color: var(--text-dark); 
+            height: 100%; 
+            overflow-x: hidden;
+            overflow-y: scroll; 
+        }
+        
+        .academic-bg {
+            background-color: #F1F5F9;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+            background-size: 100% 100%;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+        }
+        
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .page-wrapper { padding-top: 70px; min-height: calc(100vh - 60px); display: flex; flex-direction: column; }
+        
+        /* ADJUSTMENT 1: Reduced top padding from 4rem to 2rem to pull the title higher */
+        .page-section { flex: 1; padding: 0.5rem 10% 6rem 10%; animation: fadeIn 0.6s ease-out; box-sizing: border-box; display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ADJUSTMENT 2: Slightly reduced bottom margin to tighten the gap between header and cards */
+        .header-container { text-align: center; margin-bottom: 3.0rem; display: flex; flex-direction: column; align-items: center; }
+        
+        .glass-badge {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px; 
+            border-radius: 40px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; 
+            color: var(--text-dark); margin-bottom: 2rem;
+        }
+        
+        .pulse-dot { width: 10px; height: 10px; background-color: var(--priAccent); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); } 70% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
+        
+        .header-container h2 { 
+            font-size: 4.5rem; font-weight: 900; margin: 0 0 1.5rem 0; letter-spacing: -0.04em; line-height: 1.05;
+            color: #0F172A;
+        }
+        
+        /* ADJUSTMENT 3: Standardized the gradient to a professional tech blue (Navy to Royal Blue) */
+        .text-gradient {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 4px 8px rgba(37, 99, 235, 0.15));
+        }
+        
+        p.subtitle { font-size: 1.25rem; color: #475569; max-width: 700px; line-height: 1.7; font-weight: 400; }
+
+        .model-card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 2.5rem 2.2rem;
+            border: 1px solid rgba(226, 232, 240, 1);
+            box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.08), 0 5px 15px -5px rgba(0, 0, 0, 0.03);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: cardEntrance 0.6s ease-out forwards;
+        }
+        
+        .card-1 { animation-delay: 0.1s; }
+        .card-2 { animation-delay: 0.2s; }
+        .card-3 { animation-delay: 0.3s; }
+        .card-4 { animation-delay: 0.4s; }
+        .card-5 { animation-delay: 0.5s; }
+        .card-6 { animation-delay: 0.6s; }
+
+        @keyframes cardEntrance { to { opacity: 1; transform: translateY(0); } }
+
+        .model-card:hover {
+            transform: translateY(-12px) scale(1.03);
+            z-index: 10;
+        }
+        
+        .card-1:hover { box-shadow: 0 30px 60px -15px rgba(37, 99, 235, 0.25); border-color: #3B82F6; }
+        .card-2:hover { box-shadow: 0 30px 60px -15px rgba(6, 182, 212, 0.25); border-color: #06B6D4; }
+        .card-3:hover { box-shadow: 0 30px 60px -15px rgba(139, 92, 246, 0.25); border-color: #8B5CF6; }
+        .card-4:hover { box-shadow: 0 30px 60px -15px rgba(16, 185, 129, 0.25); border-color: #10B981; }
+        .card-5:hover { box-shadow: 0 30px 60px -15px rgba(244, 63, 94, 0.25); border-color: #F43F5E; }
+        .card-6:hover { box-shadow: 0 30px 60px -15px rgba(249, 115, 22, 0.25); border-color: #F97316; }
+
+        .card-1::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #3B82F6; opacity: 0.8; transition: opacity 0.3s; }
+        .card-2::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #06B6D4; opacity: 0.8; transition: opacity 0.3s; }
+        .card-3::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #8B5CF6; opacity: 0.8; transition: opacity 0.3s; }
+        .card-4::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #10B981; opacity: 0.8; transition: opacity 0.3s; }
+        .card-5::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #F43F5E; opacity: 0.8; transition: opacity 0.3s; }
+        .card-6::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #F97316; opacity: 0.8; transition: opacity 0.3s; }
+        
+        .model-card:hover::before { opacity: 1; }
+
+        .card-number { 
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; padding: 6px 14px; border-radius: 20px;
+            font-size: 0.75rem; letter-spacing: 1.5px; margin-bottom: 1.5rem; width: fit-content;
+        }
+        
+        .card-title { font-size: 1.6rem; font-weight: 800; color: var(--text-dark); margin: 0 0 1rem 0; line-height: 1.25; letter-spacing: -0.02em; }
+        .card-desc { font-size: 1.05rem; color: #475569; line-height: 1.6; flex-grow: 1; margin: 0 0 2rem 0;}
+        
+        .card-link-text { 
+            font-weight: 800; display: inline-flex; align-items: center; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1.5px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        
+        .model-card:hover .card-link-text { transform: translateX(8px); } 
+        
+        footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+    
+    <div class="academic-bg"></div>
+
+    <nav class="glass-nav sticky inset-x-0 top-0 z-50 transform-gpu">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[70px]">
+                <div class="flex-shrink-0 font-extrabold text-[1.5rem] tracking-tight text-navText">
+                    BioEcon<span class="text-secAccent">.</span>
+                </div>
+                <div class="hidden md:block">
+                    <ul class="ml-10 flex items-baseline space-x-10 m-0 p-0 list-none">
+                        <li><a href="index.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Model Framework</a></li>
+                        <li><a href="playground.html" class="text-navText font-medium text-[1.05rem] drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Playground</a></li>
+                        <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">References</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="page-wrapper flex-grow">
+        <section class="page-section max-w-7xl mx-auto">
+            
+            <div class="header-container">
+                <div class="glass-badge">
+                    <div class="pulse-dot"></div>
+                    Interactive Workspace
+                </div>
+                <h2>Interactive Model Playground</h2>
+                <p class="subtitle">Select a mathematical model below to enter the sandbox. Adjust systemic parameters, add variables, and evaluate biological outcomes in real-time.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <a href="model1.html" class="model-card card-1">
+                    <span class="card-number" style="color: #3B82F6; background: rgba(59, 130, 246, 0.15);">MODEL 01</span>
+                    <h3 class="card-title">Bioeconomic Fishery Model</h3>
+                    <p class="card-desc">Simulate biological population tracking and dynamic profit margins over a standard 90-day harvesting season.</p>
+                    <span class="card-link-text" style="color: #3B82F6;">Launch Workspace &rarr;</span>
+                </a>
+
+                <a href="#" class="model-card card-2">
+                    <span class="card-number" style="color: #0891B2; background: rgba(6, 182, 212, 0.15);">MODEL 02</span>
+                    <h3 class="card-title">Periodic Seasonal Costs Model</h3>
+                    <p class="card-desc">Integrate random walk pricing models to observe the effects of economic volatility on harvest yields.</p>
+                    <span class="card-link-text" style="color: #0891B2;">In Development &rarr;</span>
+                </a>
+
+                <a href="#" class="model-card card-3">
+                    <span class="card-number" style="color: #7C3AED; background: rgba(139, 92, 246, 0.15);">MODEL 03</span>
+                    <h3 class="card-title">Abrupt Cost Chnages Model</h3>
+                    <p class="card-desc">Evaluate the predator-prey dynamics of harvesting interlinked populations within a closed ecosystem.</p>
+                    <span class="card-link-text" style="color: #7C3AED;">In Development &rarr;</span>
+                </a>
+
+                <a href="#" class="model-card card-4">
+                    <span class="card-number" style="color: #059669; background: rgba(16, 185, 129, 0.15);">MODEL 04</span>
+                    <h3 class="card-title">Stochastic Market Price Model</h3>
+                    <p class="card-desc">Apply strict upper bounds on catch effort to see how government intervention alters bioeconomic stability.</p>
+                    <span class="card-link-text" style="color: #059669;">In Development &rarr;</span>
+                </a>
+
+                <a href="#" class="model-card card-5">
+                    <span class="card-number" style="color: #E11D48; background: rgba(244, 63, 94, 0.15);">MODEL 05</span>
+                    <h3 class="card-title">Black-Scholes 3D Model</h3>
+                    <p class="card-desc">Introduce complex sinusoidal effort functions to mimic high-variance tourist and commercial fishing seasons.</p>
+                    <span class="card-link-text" style="color: #E11D48;">In Development &rarr;</span>
+                </a>
+
+                <a href="#" class="model-card card-6">
+                    <span class="card-number" style="color: #EA580C; background: rgba(249, 115, 22, 0.15);">MODEL 06</span>
+                    <h3 class="card-title">Real Options Valuation</h3>
+                    <p class="card-desc">The ultimate bioeconomic synthesis applying the Black-Scholes framework to biological assets.</p>
+                    <span class="card-link-text" style="color: #EA580C;">In Development &rarr;</span>
+                </a>
+
+            </div>
+
+        </section>
+    </div>
+    
+    <footer class="w-full text-center h-[60px] leading-[60px] text-[#94A3B8] text-[0.9rem] bg-navBg border-t border-white/5 relative z-10 font-[JetBrains_Mono] font-mono">
+        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
+    </footer>
+
 </body>
 </html>
