@@ -4,39 +4,241 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>History & Framework</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navBg: '#0F172A', navHover: '#1E293B', navText: '#F8FAFC', navAccent: '#3B82F6',
+                        mainBg: '#F8FAFC', secBg: '#FFFFFF', altBg: '#F1F5F9',
+                        priAccent: '#2563EB', secAccent: '#06B6D4', hlAccent: '#7C3AED',
+                        textDark: '#0F172A', textMuted: '#475569'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        :root { --primary-blue: #0A2540; --secondary-blue: #116466; --accent-teal: #2C9FA3; --light-bg: #F4F7F6; --text-dark: #333333; --text-light: #FFFFFF; --nav-height: 70px; --footer-height: 60px; }
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: var(--text-dark); height: 100%; }
-        nav { background-color: var(--primary-blue); height: var(--nav-height); padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
-        nav .logo { color: var(--text-light); font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
-        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-        nav ul li { margin-left: 2rem; }
-        nav ul li a { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 1.1rem; cursor: pointer; transition: color 0.3s ease, text-shadow 0.3s ease; }
-        nav ul li a:hover { color: var(--accent-teal); text-shadow: 0 0 8px rgba(44, 159, 163, 0.6); }
+        :root { 
+            --nav-bg: #0F172A;       
+            --nav-hover: #1E293B; 
+            --nav-text: #F8FAFC; 
+            --main-bg: #F8FAFC;      
+            --panel-bg: #FFFFFF;     
+            --accent-pri: #2563EB;   
+            --accent-sec: #06B6D4;   
+            --accent-hl: #7C3AED;
+            --text-dark: #0F172A;    
+            --text-muted: #475569;
+            --nav-height: 70px; 
+            --footer-height: 60px; 
+        }
+
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--main-bg); 
+            color: var(--text-dark); 
+            height: 100%; 
+            overflow-x: hidden;
+            overflow-y: scroll; 
+        }
+
+        .academic-bg {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.04) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.04) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(124, 58, 237, 0.03) 0px, transparent 50%);
+            background-size: 100% 100%;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+        }
+        
+        .glass-nav { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(59, 130, 246, 0.2); }
+        
         .page-wrapper { padding-top: var(--nav-height); min-height: calc(100vh - var(--footer-height)); display: flex; flex-direction: column; }
-        .page-section { flex: 1; padding: 3rem 10%; animation: fadeIn 0.4s ease-in-out; box-sizing: border-box; display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        h2 { color: var(--primary-blue); border-bottom: 2px solid var(--accent-teal); padding-bottom: 0.5rem;}
-        footer { background-color: var(--primary-blue); color: var(--text-light); text-align: center; height: var(--footer-height); line-height: var(--footer-height); font-size: 0.9rem; width: 100%; }
+        .page-section { flex: 1; padding: 3rem 10% 6rem 10%; animation: fadeIn 0.6s ease-out; box-sizing: border-box; display: block; max-width: 1200px; margin: 0 auto; width: 100%; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .header-container { text-align: left; margin-bottom: 3.5rem; }
+        
+        .header-container h2 { 
+            font-size: 3rem; 
+            font-weight: 900; 
+            margin: 0 0 0.5rem 0; 
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            color: var(--text-dark);
+            display: inline-block;
+        }
+        
+        p.subtitle { font-size: 1.25rem; color: var(--text-muted); max-width: 800px; margin: 0; line-height: 1.6; font-weight: 400; }
+
+        /* Premium Content Cards */
+        .content-card {
+            background: var(--panel-bg);
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Top Accent Lines for Cards */
+        .card-intro::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--accent-pri); }
+        .card-math::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: var(--accent-sec); }
+
+        .content-heading {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+
+        .content-text {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .content-text:last-child { margin-bottom: 0; }
+
+        .math-block {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #EFF6FF;
+            border-left: 4px solid var(--accent-pri);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 2rem 0;
+        }
+
+        footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">BioEcon Models</div>
-        <ul>
-            <li><a href="index.html">Title Page</a></li>
-            <li><a href="about.html">History & Framework</a></li>
-            <li><a href="playground.html">Model Playground</a></li>
-            <li><a href="sources.html">Sources</a></li>
-        </ul>
+    
+    <div class="academic-bg"></div>
+
+    <nav class="glass-nav sticky inset-x-0 top-0 z-50 shadow-[0_4px_20px_rgba(15,23,42,0.2)] transform-gpu">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[70px]">
+                <div class="flex-shrink-0 font-extrabold text-[1.5rem] tracking-tight text-navText">
+                    BioEcon<span class="text-secAccent">.</span>
+                </div>
+                <div class="hidden md:block">
+                    <ul class="ml-10 flex items-baseline space-x-10 m-0 p-0 list-none">
+                        <li><a href="index.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-navText font-medium text-[1.05rem] drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Model Framework</a></li>
+                        <li><a href="playground.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Playground</a></li>
+                        <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">References</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </nav>
-    <div class="page-wrapper">
-        <section id="about" class="page-section">
-            <h2>History & Framework</h2>
-            <p>This project models the bioeconomic dynamics of a population of fish being harvested and the profit produced from the yield. The population follows logistic growth with harvesting, and profit is measured per unit catch.</p>
-            <p>The original system was programmed in Python using the SciPy library for differential equation integration. This web application translates that quantitative mathematical foundation directly into an interactive, browser-based Runge-Kutta numerical solver.</p>
+    
+    <div class="page-wrapper flex-grow">
+        <section id="framework" class="page-section">
+            
+            <div class="border-b-[2px] border-[#E2E8F0] pb-8 w-full header-container">
+                 <h2>History & Framework</h2>
+                <p class="subtitle">
+                    The intersection of biological population dynamics and quantitative economic valuation.
+                </p>
+            </div>
+
+            <div class="content-card card-intro">
+                <h3 class="content-heading">
+                    <svg class="w-7 h-7 text-priAccent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Project Introduction
+                </h3>
+                <p class="content-text">
+                    This project models the complex bioeconomic dynamics of a single-species fishery, specifically focusing on the relationship between biological harvesting and the resulting commercial profit. While traditional biological models evaluate population sustainability in a vacuum, real-world systems are fundamentally driven by economic incentives. 
+                </p>
+                <p class="content-text">
+                    By merging these two disciplines, we can analyze how a population of fish behaves under continuous harvesting pressure while simultaneously tracking the profit yielded per unit catch. 
+                </p>
+                <div class="highlight-box">
+                    <p class="content-text" style="margin: 0; color: #1E3A8A; font-weight: 600;">
+                        The objective is to progressively advance from a deterministic baseline model to highly complex, stochastic economic environments—evaluating sinusoidal cost fluctuations, abrupt market shocks, and sudden demand surges over a standard season.
+                    </p>
+                </div>
+                <p class="content-text">
+                    The original systemic architecture was programmed in Python, utilizing the SciPy library for differential equation integration. This web application translates that quantitative mathematical foundation directly into an interactive, browser-based numerical solver.
+                </p>
+            </div>
+
+            <div class="content-card card-math">
+                <h3 class="content-heading">
+                    <svg class="w-7 h-7 text-secAccent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    Mathematical Framework
+                </h3>
+                
+                <h4 class="text-xl font-bold text-slate-800 mt-6 mb-3">Biological Population Dynamics</h4>
+                <p class="content-text">
+                    The biological foundation of the system assumes the fish population follows classical logistic growth. However, this natural growth is constantly offset by a harvesting function. The rate of change of the fish population, \( P(t) \), with respect to time is given by the differential equation:
+                </p>
+                
+                <div class="math-block">
+                    $$ \frac{dP}{dt} = rP\left(1 - \frac{P}{K}\right) - qPE(t) $$
+                </div>
+                
+                <ul class="list-disc list-inside text-lg text-slate-600 mb-8 ml-4 space-y-2">
+                    <li><strong>\( r \)</strong>: The intrinsic biological growth rate of the species.</li>
+                    <li><strong>\( K \)</strong>: The carrying capacity of the ecosystem.</li>
+                    <li><strong>\( q \)</strong>: The catchability coefficient.</li>
+                    <li><strong>\( E(t) \)</strong>: The fishing effort deployed at time \( t \).</li>
+                </ul>
+
+                <h4 class="text-xl font-bold text-slate-800 mt-8 mb-3">Economic Volatility & Option Valuation</h4>
+                <p class="content-text">
+                    To accurately simulate real-world fisheries, the economic parameters cannot remain static. The baseline profit function is evaluated as the market price per unit minus the operational cost required to harvest that unit. 
+                </p>
+                <p class="content-text">
+                    However, as the models advance, we introduce <strong>Geometric Brownian Motion</strong> to simulate random, realistic fluctuations in market demand and price. Ultimately, the framework bridges resource economics and quantitative finance by applying the <strong>Black-Scholes analytical formula</strong> to the fishery. In this paradigm, unharvested biomass is treated mathematically as a European call option, where the expected discounted profit \( V \) is evaluated based on market volatility and time to maturity.
+                </p>
+
+                <div class="math-block" style="background: #F1F5F9; border-color: #CBD5E1;">
+                    $$ V = P \cdot \Phi(d_1) - X e^{-\delta \tau} \cdot \Phi(d_2) $$
+                </div>
+
+            </div>
+
         </section>
     </div>
-    <footer>&copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.</footer>
+    
+    <footer>
+        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
+    </footer>
 </body>
 </html>
