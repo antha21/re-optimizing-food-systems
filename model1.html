@@ -170,7 +170,64 @@
         .tool-btn.active { background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; }
         
         footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); }
-    </style>
+
+		/* =========================================
+           MOBILE ADJUSTMENTS ONLY (Max Width 768px)
+           ========================================= */
+        @media (max-width: 768px) {
+            /* Reduce page padding so content isn't squeezed */
+            .page-section {
+                padding: 1rem 5% 3rem 5% !important;
+            }
+
+            /* Shrink main header and subtitle */
+            .header-container h2 {
+                font-size: 2rem !important;
+            }
+            p.subtitle {
+                font-size: 1rem !important;
+                line-height: 1.5 !important;
+            }
+
+            /* Isolate the math equation so it doesn't break the layout */
+            .equation {
+                font-size: 0.9em !important;
+                display: block !important;
+                margin-top: 0.75rem !important;
+            }
+
+            /* CRITICAL: Allow the control panel and charts to stack and shrink to fit the screen */
+            .playground-container {
+                gap: 1.5rem !important;
+            }
+            .controls, .visualizer {
+                min-width: 100% !important;
+            }
+            .controls {
+                padding: 1.5rem !important;
+            }
+
+            /* Adjust chart boxes for small screens (disable manual resizing) */
+            .chart-box {
+                height: 420px !important;
+                padding: 1rem !important;
+                resize: none !important; 
+            }
+
+            /* Let the footer wrap */
+            footer {
+                height: auto !important;
+                line-height: 1.5 !important;
+                padding: 1rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            /* Navbar logo adjustment */
+            .text-\[1\.5rem\] {
+                font-size: 1.25rem !important;
+            }
+        }
+	</style>
 </head>
 <body onload="runSimulation()">
     
@@ -190,7 +247,22 @@
                         <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">References</a></li>
                     </ul>
                 </div>
+				<div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-navText hover:text-secAccent focus:outline-none transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
+        </div>
+		<div id="mobile-menu" class="hidden md:hidden absolute top-[70px] left-0 w-full bg-navBg/95 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+            <ul class="flex flex-col px-6 py-6 space-y-4 text-center">
+                <li><a href="index.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Home</a></li>
+                <li><a href="about.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Model Framework</a></li>
+                <li><a href="playground.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Playground</a></li>
+                <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">References</a></li>
+            </ul>
         </div>
     </nav>
     
@@ -299,6 +371,17 @@
     <footer>
         &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
     </footer>
+
+	<script>
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if(btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+    </script>
 
     <script>
         Chart.defaults.font.family = "'Inter', sans-serif";
