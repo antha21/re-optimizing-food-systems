@@ -152,6 +152,53 @@
         .model-card:hover .card-link-text { transform: translateX(8px); } 
         
         footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        /* =========================================
+           MOBILE ADJUSTMENTS ONLY (Max Width 768px)
+           ========================================= */
+        @media (max-width: 768px) {
+            /* Adjust the main title size */
+            h1.text-5xl {
+                font-size: 2.5rem !important;
+                line-height: 1.1 !important;
+            }
+            
+            /* Adjust the subtitle above the main title */
+            h2.text-sm {
+                font-size: 0.75rem !important;
+            }
+            
+            /* Adjust the description paragraph */
+            p.text-xl {
+                font-size: 1.125rem !important;
+                padding: 0 1rem !important;
+            }
+            
+            /* Shrink the interactive playground button slightly */
+            a.px-8.py-4 {
+                padding: 0.75rem 1.5rem !important;
+                font-size: 1rem !important;
+            }
+            
+            /* Remove the fixed height on the footer so the text can wrap naturally */
+            footer {
+                height: auto !important;
+                line-height: 1.5 !important;
+                padding: 1rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            /* Add some vertical breathing room to the main container */
+            main {
+                padding-top: 3rem !important;
+                padding-bottom: 3rem !important;
+            }
+            
+            /* Slightly reduce the 'BioEcon.' logo text size */
+            .text-\[1\.5rem\] {
+                font-size: 1.25rem !important;
+            }
+        }
     </style>
 </head>
 <body>
