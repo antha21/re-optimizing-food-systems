@@ -4,46 +4,141 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For the Halibut: Title Page</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navBg: '#0F172A', navHover: '#1E293B', navText: '#F8FAFC', navAccent: '#3B82F6',
+                        mainBg: '#F8FAFC', secBg: '#FFFFFF', altBg: '#F1F5F9',
+                        priAccent: '#2563EB', secAccent: '#06B6D4', hlAccent: '#7C3AED',
+                        textDark: '#0F172A', textMuted: '#475569'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* CSS Variables */
-        :root { --primary-blue: #0A2540; --secondary-blue: #116466; --accent-teal: #2C9FA3; --light-bg: #F4F7F6; --text-dark: #333333; --text-light: #FFFFFF; --nav-height: 70px; --footer-height: 60px; }
-        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-bg); color: var(--text-dark); height: 100%; }
-        /* Navigation Bar */
-        nav { background-color: var(--primary-blue); height: var(--nav-height); padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
-        nav .logo { color: var(--text-light); font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
-        nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-        nav ul li { margin-left: 2rem; }
-        nav ul li a { color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 1.1rem; cursor: pointer; transition: color 0.3s ease, text-shadow 0.3s ease; }
-        nav ul li a:hover { color: var(--accent-teal); text-shadow: 0 0 8px rgba(44, 159, 163, 0.6); }
-        /* Page Layout */
-        .page-wrapper { padding-top: var(--nav-height); min-height: calc(100vh - var(--footer-height)); display: flex; flex-direction: column; }
-        .page-section { flex: 1; padding: 3rem 10%; animation: fadeIn 0.4s ease-in-out; box-sizing: border-box; display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Specific Page Background */
-        #home { background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color: var(--text-light); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: calc(100vh - var(--nav-height) - var(--footer-height)); }
-        #home h1 { color: var(--text-light); font-size: 3.5rem; margin-bottom: 1rem; margin-top: 0; }
-        #home p { font-size: 1.2rem; max-width: 600px; line-height: 1.6; }
-        /* Footer */
-        footer { background-color: var(--primary-blue); color: var(--text-light); text-align: center; height: var(--footer-height); line-height: var(--footer-height); font-size: 0.9rem; width: 100%; }
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--main-bg); 
+            color: var(--text-dark); 
+            height: 100%; 
+            overflow-x: hidden;
+            overflow-y: scroll; 
+        }
+        
+        /* NEW ANIMATED BACKGROUND: Slow-moving Aurora Mesh
+           This creates a massive gradient that slowly pans across the screen, 
+           giving the illusion of underwater currents or data flows.
+        */
+        .academic-bg {
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            z-index: -1;
+            background: linear-gradient(
+                120deg, 
+                #F8FAFC 0%, 
+                #EFF6FF 25%, 
+                #ECFEFF 50%, 
+                #F5F3FF 75%, 
+                #F8FAFC 100%
+            );
+            /* Make the background massive so we can pan it */
+            background-size: 300% 300%;
+            /* 25s slow pan animation */
+            animation: gradientMove 25s ease infinite;
+        }
+
+        /* Subtle overlay to keep it feeling academic/mathematical */
+        .academic-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.8;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Tech Glass Navbar */
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Entrance Animations */
+        .fade-in-up { animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(30px); }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
-    <nav>
-        <div class="logo">BioEcon Models</div>
-        <ul>
-            <li><a href="index.html">Title Page</a></li>
-            <li><a href="about.html">History & Framework</a></li>
-            <li><a href="playground.html">Model Playground</a></li>
-            <li><a href="sources.html">Sources</a></li>
-        </ul>
+<body class="text-textDark h-screen flex flex-col">
+
+    <div class="academic-bg"></div>
+
+    <nav class="glass-nav sticky w-full top-0 z-50 shadow-[0_4px_20px_rgba(15,23,42,0.2)] transform-gpu">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[70px]">
+                <div class="flex-shrink-0 font-extrabold text-[1.5rem] tracking-tight text-navText">
+                    BioEcon<span class="text-secAccent">.</span>
+                </div>
+                <div class="hidden md:block">
+                    <ul class="ml-10 flex items-baseline space-x-10 m-0 p-0 list-none">
+                        <li><a href="index.html" class="text-navText font-medium text-[1.05rem] drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Model Framework</a></li>
+                        <li><a href="playground.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">Playground</a></li>
+                        <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300">References</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </nav>
-    <div class="page-wrapper">
-        <section id="home" class="page-section">
-            <h1>Bioeconomic Fishery Dynamics</h1>
-            <p>An interactive exploration of population dynamics, stochastic market prices, and real options valuation in a single-species fishery.</p>
-            <p><em>Navigate using the menu above to explore the models.</em></p>
-        </section>
-    </div>
-    <footer>&copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.</footer>
+
+    <main class="flex-grow flex items-center justify-center text-center px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-5xl space-y-8">
+            <h2 class="fade-in-up text-priAccent font-bold tracking-[0.15em] uppercase text-sm">
+                MATH 52039 • Modeling Projects
+            </h2>
+            
+            <h1 class="fade-in-up delay-100 text-5xl md:text-7xl font-extrabold tracking-tight text-textDark pb-2">
+                Profit and Population Dynamics
+            </h1>
+            
+            <p class="fade-in-up delay-200 mt-4 text-xl md:text-2xl text-textMuted font-light max-w-3xl mx-auto">
+                Bioeconomic Modeling and Real Options Analysis of a Fishery.
+            </p>
+
+            <div class="fade-in-up delay-300 pt-10 flex justify-center items-center">
+                <a href="playground.html" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-300 bg-priAccent rounded-xl hover:bg-secAccent shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_10px_25px_rgba(6,182,212,0.3)] hover:-translate-y-1">
+                    Enter Interactive Playground
+                    <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                </a>
+            </div>
+
+            <p class="fade-in-up delay-300 mt-16 text-sm text-textMuted font-medium tracking-wide">
+                By Anthony Artino and Sarah Decipeda
+            </p>
+        </div>
+    </main>
+
+    <footer class="w-full text-center h-[60px] leading-[60px] text-[#94A3B8] text-[0.9rem] bg-navBg border-t border-white/5 relative z-10 font-[JetBrains_Mono] font-mono">
+        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
+    </footer>
+
 </body>
 </html>
