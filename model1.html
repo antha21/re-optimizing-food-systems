@@ -207,11 +207,26 @@
                 padding: 1.5rem !important;
             }
 
-            /* Adjust chart boxes for small screens (disable manual resizing) */
+            /* Adjust chart boxes to allow horizontal swiping */
             .chart-box {
-                height: 420px !important;
-                padding: 1rem !important;
+                height: 460px !important; 
+                padding: 1rem 0 !important; /* Removes side padding to maximize space */
                 resize: none !important; 
+                overflow-x: auto !important; /* Enables horizontal scrolling */
+                -webkit-overflow-scrolling: touch; /* Smooth swiping on iPhones */
+            }
+
+            /* Force the plot to be 700px wide so the numbers aren't cramped */
+            .chart-container {
+                min-width: 700px !important; 
+                padding: 0 1rem !important;
+            }
+
+            /* Keep the tool buttons centered on the phone screen while swiping the chart */
+            .chart-toolbar {
+                position: sticky !important;
+                left: 0 !important;
+                width: 90vw !important; /* Matches the visual width of your mobile layout */
             }
 
             /* Let the footer wrap */
