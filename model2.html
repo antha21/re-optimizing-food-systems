@@ -304,36 +304,36 @@
                     
                     <div id="params_general" class="params-grid" style="display: grid;">
                         <div class="input-group">
-                            <label for="val_f0">Init. Food <span class="equation">\(F_0\)</span></label>
-                            <input type="number" id="val_f0" value="100" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_c0">Init. Capital <span class="equation">\(C_0\)</span></label>
-                            <input type="number" id="val_c0" value="30" step="1">
-                        </div>
-                        <div class="input-group">
                             <label for="val_n0">Init. Nature <span class="equation">\(N_0\)</span></label>
                             <input type="number" id="val_n0" value="0.9" step="0.05" min="0" max="1">
                         </div>
                         <div class="input-group">
-                            <label for="val_up">Policy <span class="equation">\(u_p\)</span></label>
+                            <label for="val_r">Regen Rate <span class="equation">\(r\)</span></label>
+                            <input type="number" id="val_r" value="0.2" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label for="val_k">Capacity <span class="equation">\(K\)</span></label>
+                            <input type="number" id="val_k" value="1.0" step="0.1" min="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label for="val_delta">Degradation <span class="equation">\(\delta\)</span></label>
+                            <input type="number" id="val_delta" value="0.001" step="0.0001" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="val_sigma">Sust. Eff. <span class="equation">\(\sigma\)</span></label>
+                            <input type="number" id="val_sigma" value="0.1" step="0.01" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="val_us">Sust. Policy <span class="equation">\(u_s\)</span></label>
+                            <input type="number" id="val_us" value="0.01" step="0.01" min="0" max="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="val_up">Prod. Policy <span class="equation">\(u_p\)</span></label>
                             <input type="number" id="val_up" value="1.0" step="0.05" min="0" max="1">
                         </div>
                         <div class="input-group">
-                            <label for="val_alpha">Efficiency <span class="equation">\(\alpha\)</span></label>
-                            <input type="number" id="val_alpha" value="0.35" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_beta">Consump. <span class="equation">\(\beta\)</span></label>
-                            <input type="number" id="val_beta" value="0.05" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_gamma">Decay <span class="equation">\(\gamma\)</span></label>
-                            <input type="number" id="val_gamma" value="0.02" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_pop">Population <span class="equation">\(P\)</span></label>
-                            <input type="number" id="val_pop" value="100" step="1">
+                            <label for="val_f0">Init. Food <span class="equation">\(F_0\)</span></label>
+                            <input type="number" id="val_f0" value="100" step="1">
                         </div>
                     </div>
 
@@ -510,7 +510,7 @@
 
         // Default values mapping for the Reset Button
         const defaultValues = {
-            general: { val_f0: 100, val_c0: 30, val_n0: 0.9, val_up: 1.0, val_alpha: 0.35, val_beta: 0.05, val_gamma: 0.02, val_pop: 100 },
+            general: { val_n0: 0.9, val_r: 0.2, val_k: 1.0, val_delta: 0.001, val_sigma: 0.1, val_us: 0.01, val_up: 1.0, val_f0: 100 },
             global: { val_policy_year: 15, val_global_us: 0.10, val_global_ue: 0.10, val_global_sigma: 0.1, val_global_r: 0.2, val_global_delta: 0.001 },
             state: { val_state_d_tol: 1.0, val_nature_thresh: 0.40, val_state_us: 0.25, val_state_up: 0.60, val_state_r: 0.2, val_state_sigma: 0.1 }
         };
@@ -567,19 +567,18 @@
 
             // --- OPTION 1: GENERAL MODEL (NATURE DYNAMICS) ---
             if (mode === 'general') {
-                const F0 = parseFloat(document.getElementById('val_f0').value);
-                const C0 = parseFloat(document.getElementById('val_c0').value);
                 const N0 = parseFloat(document.getElementById('val_n0').value);
+                const r = parseFloat(document.getElementById('val_r').value);
+                const K = parseFloat(document.getElementById('val_k').value);
+                const delta = parseFloat(document.getElementById('val_delta').value);
+                const sigma = parseFloat(document.getElementById('val_sigma').value);
+                const us_val = parseFloat(document.getElementById('val_us').value);
                 const up_val = parseFloat(document.getElementById('val_up').value);
-                const alpha = parseFloat(document.getElementById('val_alpha').value);
-                const beta = parseFloat(document.getElementById('val_beta').value);
-                const gamma = parseFloat(document.getElementById('val_gamma').value);
-                const P = parseFloat(document.getElementById('val_pop').value);
+                const F0 = parseFloat(document.getElementById('val_f0').value);
 
                 // Background variables to keep system moving mathematically
-                const delta = 0.001, r = 0.2, K = 1.0, sigma = 0.1, p_margin = 2.5, c = 0.05;
-                const k1 = 0.8, k2 = 0.005, D = 80, mu = 0.05;
-                const us_val = 0.01, ue_val = 0.01; 
+                const C0 = 30;
+                const ue_val = 0.01; 
 
                 const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
                 F[0] = F0; N[0] = N0; C[0] = C0; Eq[0] = 0.3;
@@ -587,10 +586,10 @@
                 for(let i = 1; i < steps; i++) {
                     let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
 
-                    let dF = alpha * prev_C * prev_N * up_val - beta * P - gamma * prev_F;
+                    let dF = alpha_base * prev_C * prev_N * up_val - beta * P_base - gamma_base * prev_F;
                     let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up_val + sigma * us_val;
-                    let dC = p_margin * (beta * P) - c * prev_F - (us_val + ue_val) * prev_C;
-                    let dEq = k1 * ue_val + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                    let dC = p_margin * (beta * P_base) - c * prev_F - (us_val + ue_val) * prev_C;
+                    let dEq = k1 * ue_val + k2 * Math.max(0, prev_F - D_base) - mu * prev_Eq;
 
                     // Removed Math.min cap to allow auto-scaling
                     F[i] = Math.max(0, prev_F + (dF * dt));
