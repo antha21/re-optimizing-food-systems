@@ -24,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -45,13 +46,11 @@
             --footer-height: 60px; 
         }
 
-        /* Apply scrollbar ONLY to html to prevent double scrollbars */
         html {
             overflow-y: scroll;
             overflow-x: hidden;
         }
 
-        /* Remove fixed height and overflow from body */
         body { 
             margin: 0; padding: 0; 
             font-family: 'Inter', sans-serif; 
@@ -83,26 +82,23 @@
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
         }
 
-    /* Keeps symbols inside parameter labels perfectly inline with the text */
-	.equation { 
+    	.equation { 
     		font-size: 1.0em; 
     		color: var(--text-dark); 
     		font-weight: 500; 
     		margin-left: 2px; 
-	}
+    	}
 
-	/* ONLY targets the main equation in the subtitle to push it to a new line with spacing */
-	p.subtitle .equation {
+    	p.subtitle .equation {
     		font-size: 1.1em;
     		display: block;
     		margin-top: 0.85rem;
-   		margin-bottom: 0.25rem;
-	}    
+   		    margin-bottom: 0.25rem;
+    	}    
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
         
-        /* ADJUSTED: Solid, clean color for the title */
         .header-container h2 { 
             font-size: 2.5rem; 
             font-weight: 900; 
@@ -124,7 +120,6 @@
         }
         .controls h3 { margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); border-bottom: 1px solid #E2E8F0; padding-bottom: 0.75rem; }
         
-        /* 2x4 PARAMETER GRID FOR INPUTS */
         .params-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 
         .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -140,7 +135,6 @@
         
         .visualizer { flex: 2.5; min-width: 450px; display: flex; flex-direction: column; gap: 2.5rem; }
         
-        /* ADJUSTED: Sensible size and centered */
         .chart-box { 
             background-color: var(--panel-bg); 
             border: 1px solid #E2E8F0; 
@@ -150,8 +144,8 @@
             transition: box-shadow 0.3s ease; 
             height: 500px;
             width: 100%;
-            max-width: 800px; /* Prevents extreme stretching */
-            margin: 0 auto;   /* Centers in the visualizer pane */
+            max-width: 800px; 
+            margin: 0 auto;   
             min-height: 350px;
             resize: both; 
             overflow: hidden;
@@ -162,7 +156,6 @@
         
         .chart-container { position: relative; flex-grow: 1; width: 100%; min-height: 0; }
         
-        /* Toolbar with icon buttons */
         .chart-toolbar {
             display: flex;
             justify-content: center;
@@ -190,7 +183,6 @@
         
         footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); }
 
-        /* SCENARIO BAR (Above Everything) */
         .scenario-bar {
             background: var(--panel-bg);
             border: 1px solid #E2E8F0;
@@ -210,9 +202,6 @@
             font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; outline: none; flex-grow: 1;
         }
 
-        /* =========================================
-           MOBILE ADJUSTMENTS ONLY (Max Width 768px)
-           ========================================= */
         @media (max-width: 768px) {
             .page-section { padding: 1rem 5% 3rem 5% !important; }
             .header-container h2 { font-size: 2rem !important; }
@@ -221,7 +210,7 @@
             .playground-container { gap: 1.5rem !important; }
             .controls, .visualizer { min-width: 100% !important; }
             .controls { padding: 1.5rem !important; }
-            .params-grid { grid-template-columns: 1fr; } /* Stack inputs on mobile */
+            .params-grid { grid-template-columns: 1fr; } 
             .scenario-bar { flex-direction: column; align-items: flex-start; gap: 0.75rem;}
             .scenario-bar select { width: 100%; }
             .chart-box { height: 380px !important; padding: 1rem 0.25rem !important; width: 100% !important; resize: none !important; }
@@ -292,8 +281,9 @@
                 <label for="model_selector">Select Scenario View:</label>
                 <select id="model_selector" onchange="toggleInputs(); runSimulation();">
                     <option value="general">1. General Model (Food Dynamics)</option>
-                    <option value="global">2. Global Transitions (Scenario Comparison)</option>
-                    <option value="state">3. State Dynamic Policy (Louisiana, CT, Utah)</option>
+                    <option value="global">2. State Transition: Global Policy (Year 15)</option>
+                    <option value="immediate">3. State Transition: Immediate Intervention</option>
+                    <option value="delay">4. State Transition: Political Delay</option>
                 </select>
             </div>
 
@@ -338,56 +328,46 @@
                     </div>
 
                     <div id="params_global" class="params-grid" style="display: none;">
-                        <div class="input-group">
-                            <label for="val_policy_year">Policy Shift Yr</label>
-                            <input type="number" id="val_policy_year" value="15" step="1" min="1" max="50">
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label for="val_global_year">Global Policy Implementation Year</label>
+                            <input type="number" id="val_global_year" value="15" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
-                            <label for="val_global_us">Post-Sust. <span class="equation">\(u_s\)</span></label>
-                            <input type="number" id="val_global_us" value="0.10" step="0.01" min="0" max="1">
+                            <label for="val_global_pre_up">Pre-Policy <span class="equation">\(u_p\)</span></label>
+                            <input type="number" id="val_global_pre_up" value="0.8" step="0.1" max="1">
                         </div>
                         <div class="input-group">
-                            <label for="val_global_ue">Post-Eq. <span class="equation">\(u_e\)</span></label>
-                            <input type="number" id="val_global_ue" value="0.10" step="0.01" min="0" max="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_global_sigma">Sust. Eff. <span class="equation">\(\sigma\)</span></label>
-                            <input type="number" id="val_global_sigma" value="0.1" step="0.01" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_global_r">Nat. Regen <span class="equation">\(r\)</span></label>
-                            <input type="number" id="val_global_r" value="0.2" step="0.01" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_global_c">Base Cost <span class="equation">\(c\)</span></label>
-                            <input type="number" id="val_global_c" value="0.05" step="0.01" min="0">
+                            <label for="val_global_post_up">Post-Policy <span class="equation">\(u_p\)</span></label>
+                            <input type="number" id="val_global_post_up" value="0.7" step="0.1" max="1">
                         </div>
                     </div>
 
-                    <div id="params_state" class="params-grid" style="display: none;">
-                        <div class="input-group">
-                            <label for="val_state_d_tol">Food Emerg. Tol.</label>
-                            <input type="number" id="val_state_d_tol" value="1.0" step="0.05" min="0.1">
+                    <div id="params_immediate" class="params-grid" style="display: none;">
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label style="color:var(--text-muted); font-size:0.8rem; margin-bottom:4px;">Crisis Trigger Thresholds:</label>
                         </div>
                         <div class="input-group">
-                            <label for="val_nature_thresh">Nat. Emerg. Thr.</label>
-                            <input type="number" id="val_nature_thresh" value="0.40" step="0.05" min="0" max="1">
+                            <label for="val_imm_f_thresh">Food Mutliplier</label>
+                            <input type="number" id="val_imm_f_thresh" value="1.1" step="0.1">
                         </div>
                         <div class="input-group">
-                            <label for="val_state_us">Emerg. Sust <span class="equation">\(u_s\)</span></label>
-                            <input type="number" id="val_state_us" value="0.25" step="0.05" min="0" max="1">
+                            <label for="val_imm_n_thresh">Nature Min</label>
+                            <input type="number" id="val_imm_n_thresh" value="0.4" step="0.05">
+                        </div>
+                    </div>
+
+                    <div id="params_delay" class="params-grid" style="display: none;">
+                        <div class="input-group">
+                            <label for="val_del_la">LA Action Year</label>
+                            <input type="number" id="val_del_la" value="6" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
-                            <label for="val_state_ue">Emerg. Eq <span class="equation">\(u_e\)</span></label>
-                            <input type="number" id="val_state_ue" value="0.25" step="0.05" min="0" max="1">
+                            <label for="val_del_ct">CT Action Year</label>
+                            <input type="number" id="val_del_ct" value="15" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
-                            <label for="val_state_c">Base Cost <span class="equation">\(c\)</span></label>
-                            <input type="number" id="val_state_c" value="0.05" step="0.01" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="val_state_pmargin">Profit Margin</label>
-                            <input type="number" id="val_state_pmargin" value="2.5" step="0.1" min="0">
+                            <label for="val_del_nh">NH Action Year</label>
+                            <input type="number" id="val_del_nh" value="25" step="1" min="1" max="50">
                         </div>
                     </div>
                     
@@ -436,16 +416,14 @@
                 menu.classList.toggle('hidden');
             });
         }
-    </script>
 
-    <script>
         Chart.defaults.font.family = "'Inter', sans-serif";
         Chart.defaults.color = '#475569';
         Chart.defaults.animation.duration = 600; 
 
         let chartInstance1 = null; 
         
-        // CUSTOM PLUGIN: Forces a solid white background before drawing the chart.
+        // Custom Plugin for solid white background exports
         const whiteBackgroundPlugin = {
             id: 'customCanvasBackgroundColor',
             beforeDraw: (chart) => {
@@ -457,91 +435,60 @@
                 ctx.restore();
             }
         };
-        
-        // Register the plugin globally
         Chart.register(whiteBackgroundPlugin);
 
-        // Custom Toolbar Functions
-        function getChart(id) { return chartInstance1; } // Simplified since there is only 1 chart now
+        function getChart(id) { return chartInstance1; }
 
         function togglePan(id, btnId) {
             let chart = getChart(id);
             let btn = document.getElementById(btnId);
             let isPanEnabled = chart.options.plugins.zoom.pan.enabled;
-            
-            // Toggle the setting
             chart.options.plugins.zoom.pan.enabled = !isPanEnabled;
             chart.update();
-            
-            // Update button UI (just the active class, keeps the SVG intact)
-            if (!isPanEnabled) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            if (!isPanEnabled) btn.classList.add('active');
+            else btn.classList.remove('active');
         }
 
-        function customZoom(id, factor) {
-            let chart = getChart(id);
-            chart.zoom(factor);
-        }
-
-        function resetCustomZoom(id) {
-            let chart = getChart(id);
-            chart.resetZoom();
-        }
-
+        function customZoom(id, factor) { getChart(id).zoom(factor); }
+        function resetCustomZoom(id) { getChart(id).resetZoom(); }
         function downloadChart(id, filename) {
             let chart = getChart(id);
             const link = document.createElement('a');
             link.download = filename;
-            // The whiteBackgroundPlugin ensures this exports cleanly!
             link.href = chart.toBase64Image();
             link.click();
         }
 
-        // Toggles visibility of manual inputs based on dropdown selection
         function toggleInputs() {
             const mode = document.getElementById('model_selector').value;
             document.getElementById('params_general').style.display = (mode === 'general') ? 'grid' : 'none';
             document.getElementById('params_global').style.display = (mode === 'global') ? 'grid' : 'none';
-            document.getElementById('params_state').style.display = (mode === 'state') ? 'grid' : 'none';
+            document.getElementById('params_immediate').style.display = (mode === 'immediate') ? 'grid' : 'none';
+            document.getElementById('params_delay').style.display = (mode === 'delay') ? 'grid' : 'none';
         }
 
-        // Default values mapping for the Reset Button
         const defaultValues = {
             general: { val_f0: 100, val_c0: 30, val_n0: 0.9, val_up: 1.0, val_alpha: 0.35, val_beta: 0.05, val_gamma: 0.02, val_pop: 100 },
-            global: { val_policy_year: 15, val_global_us: 0.10, val_global_ue: 0.10, val_global_sigma: 0.1, val_global_r: 0.2, val_global_c: 0.05 },
-            state: { val_state_d_tol: 1.0, val_nature_thresh: 0.40, val_state_us: 0.25, val_state_ue: 0.25, val_state_c: 0.05, val_state_pmargin: 2.5 }
+            global: { val_global_year: 15, val_global_pre_up: 0.8, val_global_post_up: 0.7 },
+            immediate: { val_imm_f_thresh: 1.1, val_imm_n_thresh: 0.4 },
+            delay: { val_del_la: 6, val_del_ct: 15, val_del_nh: 25 }
         };
 
         function resetDefaults() {
             const mode = document.getElementById('model_selector').value;
-            
-            // 1. Reset inputs to original state
             for (const [id, val] of Object.entries(defaultValues[mode])) {
                 const el = document.getElementById(id);
                 if (el) el.value = val;
             }
-            
-            // 2. Reset the physical plot stretch (clear inline height/width)
             const chartBox = document.getElementById('main-chart-box');
-            if (chartBox) {
-                chartBox.style.width = '';
-                chartBox.style.height = '';
-            }
-            
-            // 3. Reset Chart.js zoom/pan internal state
+            if (chartBox) { chartBox.style.width = ''; chartBox.style.height = ''; }
             if (chartInstance1) chartInstance1.resetZoom();
-            
-            // 4. Redraw graph
             runSimulation();
         }
 
         function runSimulation() {
             const mode = document.getElementById('model_selector').value;
             
-            // Common Base Parameters (Python setup)
             const dt = 0.01;
             const totalYears = 50;
             const steps = Math.floor(totalYears / dt);
@@ -551,23 +498,31 @@
             timeLabels.push(totalYears.toFixed(1)); 
 
             let datasets = [];
+            let chartAnnotations = {};
             let yAxisTitle = 'Total Food / Biomass';
 
-            // --- OPTION 1: GENERAL MODEL (PURE FOOD ODE VARIABLES) ---
+            // Base Python parameters utilized across the 3 State Scenario Models
+            const BASE_POP = 100, BASE_D = 80, BASE_k2 = 0.005;
+            const beta = 0.05, r = 0.2, K = 1.0, sigma = 0.1, p_margin = 2.5, c = 0.05, k1 = 0.8, mu = 0.05;
+            
+            const stateScenarios = {
+                'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, base_delta: 0.001, color: '#EF4444' },
+                'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.16, gamma: 0.05, base_delta: 0.001, color: '#F97316' },
+                'New Hampshire (Low Insecurity)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.04, base_delta: 0.0002, color: '#10B981' }
+            };
+
+            // --- OPTION 1: GENERAL MODEL ---
             if (mode === 'general') {
                 const F0 = parseFloat(document.getElementById('val_f0').value);
                 const C0 = parseFloat(document.getElementById('val_c0').value);
                 const N0 = parseFloat(document.getElementById('val_n0').value);
                 const up_val = parseFloat(document.getElementById('val_up').value);
-                const alpha = parseFloat(document.getElementById('val_alpha').value);
-                const beta = parseFloat(document.getElementById('val_beta').value);
-                const gamma = parseFloat(document.getElementById('val_gamma').value);
-                const P = parseFloat(document.getElementById('val_pop').value);
+                const alpha_gen = parseFloat(document.getElementById('val_alpha').value);
+                const beta_gen = parseFloat(document.getElementById('val_beta').value);
+                const gamma_gen = parseFloat(document.getElementById('val_gamma').value);
+                const P_gen = parseFloat(document.getElementById('val_pop').value);
 
-                // Background variables to keep system moving mathematically
-                const delta = 0.001, r = 0.2, K = 1.0, sigma = 0.1, p_margin = 2.5, c = 0.05;
-                const k1 = 0.8, k2 = 0.005, D = 80, mu = 0.05;
-                const us = 0.01, ue = 0.01; 
+                const delta = 0.001, D = 80, us = 0.01, ue = 0.01; 
 
                 const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
                 F[0] = F0; N[0] = N0; C[0] = C0; Eq[0] = 0.3;
@@ -575,13 +530,10 @@
                 for(let i = 1; i < steps; i++) {
                     let prev_F = F[i-1]; let prev_N = N[i-1]; let prev_C = C[i-1]; let prev_Eq = Eq[i-1];
 
-                    // Core ODE explicitly adjusted by user inputs
-                    let dF = alpha * prev_C * prev_N * up_val - beta * P - gamma * prev_F;
-                    
-                    // Background ODEs
+                    let dF = alpha_gen * prev_C * prev_N * up_val - beta_gen * P_gen - gamma_gen * prev_F;
                     let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up_val + sigma * us;
-                    let dC = p_margin * (beta * P) - c * prev_F - (us + ue) * prev_C;
-                    let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                    let dC = p_margin * (beta_gen * P_gen) - c * prev_F - (us + ue) * prev_C;
+                    let dEq = k1 * ue + BASE_k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                     F[i] = Math.max(0, prev_F + (dF * dt));
                     N[i] = Math.max(0, prev_N + (dN * dt));
@@ -599,80 +551,14 @@
                 });
             }
 
-            // --- OPTION 2: GLOBAL SCENARIOS ---
+            // --- OPTION 2: GLOBAL POLICY ---
             else if (mode === 'global') {
-                const policyYear = parseFloat(document.getElementById('val_policy_year').value);
-                const postUs = parseFloat(document.getElementById('val_global_us').value);
-                const postUe = parseFloat(document.getElementById('val_global_ue').value);
-                const sigma = parseFloat(document.getElementById('val_global_sigma').value);
-                const r = parseFloat(document.getElementById('val_global_r').value);
-                const c = parseFloat(document.getElementById('val_global_c').value);
-
-                const beta = 0.05, P = 100, K = 1.0;
-                const p_margin = 2.5, k1 = 0.8, k2 = 0.005, D = 80, mu = 0.05;
-
-                const scenarios = {
-                    'Developing (High Insecurity)': { y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, delta: 0.001, color: '#EF4444' },
-                    'Emerging (Avg Insecurity)': { y0: [85.0, 0.75, 25.0, 0.45], alpha: 0.28, gamma: 0.04, delta: 0.001, color: '#F97316' },
-                    'Developed (Low Insecurity)': { y0: [180.0, 0.5, 80.0, 0.85], alpha: 0.45, gamma: 0.02, delta: 0.003, color: '#10B981' }
-                };
-
-                for (const [name, params] of Object.entries(scenarios)) {
-                    const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
-                    F[0] = params.y0[0]; N[0] = params.y0[1]; C[0] = params.y0[2]; Eq[0] = params.y0[3];
-                    
-                    for(let i = 1; i < steps; i++) {
-                        let current_time = i * dt;
-                        
-                        let up = current_time < policyYear ? 1.0 : 0.7;
-                        let us = current_time < policyYear ? 0.01 : postUs;
-                        let ue = current_time < policyYear ? 0.01 : postUe;
-
-                        let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
-                        
-                        let dF = params.alpha * prev_C * prev_N * up - beta * P - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - params.delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * P) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
-
-                        F[i] = Math.max(0, prev_F + (dF * dt));
-                        N[i] = Math.max(0, prev_N + (dN * dt));
-                        C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
-                    }
-                    
-                    const plot_F = [];
-                    for(let i = 0; i < steps; i += 10) plot_F.push(F[i]);
-                    plot_F.push(F[steps-1]);
-
-                    datasets.push({
-                        label: name, data: plot_F, borderColor: params.color, backgroundColor: 'transparent',
-                        fill: false, yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.2
-                    });
-                }
-            }
-
-            // --- OPTION 3: STATE DYNAMIC POLICY ---
-            else if (mode === 'state') {
                 yAxisTitle = 'Total Food (Millions)';
-                
-                const dTol = parseFloat(document.getElementById('val_state_d_tol').value);
-                const nThresh = parseFloat(document.getElementById('val_nature_thresh').value);
-                const emergUs = parseFloat(document.getElementById('val_state_us').value);
-                const emergUe = parseFloat(document.getElementById('val_state_ue').value);
-                const c = parseFloat(document.getElementById('val_state_c').value);
-                const p_margin = parseFloat(document.getElementById('val_state_pmargin').value); 
+                const policyYear = parseFloat(document.getElementById('val_global_year').value);
+                const pre_up = parseFloat(document.getElementById('val_global_pre_up').value);
+                const post_up = parseFloat(document.getElementById('val_global_post_up').value);
 
-                const beta = 0.05, r = 0.2, K = 1.0, sigma = 0.1, mu = 0.05, k1 = 0.8;
-                const BASE_POP = 100, BASE_D = 80, BASE_k2 = 0.005;
-
-                const scenarios = {
-                    'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, base_delta: 0.001, color: '#EF4444' },
-                    'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [85.0, 0.75, 25.0, 0.45], alpha: 0.28, gamma: 0.04, base_delta: 0.001, color: '#F97316' },
-                    'Utah (Low Insecurity)': { pop: 3500000, base_y0: [180.0, 0.5, 80.0, 0.85], alpha: 0.45, gamma: 0.02, base_delta: 0.0004, color: '#10B981' }
-                };
-
-                for (const [name, params] of Object.entries(scenarios)) {
+                for (const [name, params] of Object.entries(stateScenarios)) {
                     let scale = params.pop / BASE_POP;
                     let D = BASE_D * scale;
                     let delta = params.base_delta / scale;
@@ -685,11 +571,78 @@
                     Eq[0] = params.base_y0[3];
 
                     for(let i = 1; i < steps; i++) {
+                        let current_time = i * dt;
+                        
+                        let up = current_time < policyYear ? pre_up : post_up;
+                        let us = current_time < policyYear ? 0.05 : 0.1;
+                        let ue = current_time < policyYear ? 0.05 : 0.1;
+
                         let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
                         
-                        let up = 1.0, us = 0.01, ue = 0.01;
-                        if (prev_F < (D * dTol) || prev_N < nThresh) {
-                            up = 0.6; us = emergUs; ue = emergUe;
+                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
+                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
+                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+
+                        F[i] = Math.max(0, prev_F + (dF * dt));
+                        N[i] = Math.max(0, prev_N + (dN * dt));
+                        C[i] = Math.max(0, prev_C + (dC * dt));
+                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                    }
+                    
+                    const plot_F = [];
+                    for(let i = 0; i < steps; i += 10) plot_F.push(F[i] / 1000000);
+                    plot_F.push(F[steps-1] / 1000000);
+
+                    datasets.push({
+                        label: name, data: plot_F, borderColor: params.color, backgroundColor: 'transparent',
+                        fill: false, yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.2
+                    });
+                }
+                
+                // Static Global Line Annotation
+                chartAnnotations['globalLine'] = {
+                    type: 'line', xMin: policyYear, xMax: policyYear,
+                    borderColor: 'gray', borderWidth: 2, borderDash: [5, 5],
+                    label: { content: 'Policy Shift', display: true, position: 'start', backgroundColor: 'rgba(0,0,0,0.6)' }
+                };
+            }
+
+            // --- OPTION 3: IMMEDIATE INTERVENTION ---
+            else if (mode === 'immediate') {
+                yAxisTitle = 'Total Food (Millions)';
+                const f_thresh = parseFloat(document.getElementById('val_imm_f_thresh').value);
+                const n_thresh = parseFloat(document.getElementById('val_imm_n_thresh').value);
+                let triggerCount = 0;
+
+                for (const [name, params] of Object.entries(stateScenarios)) {
+                    let scale = params.pop / BASE_POP;
+                    let D = BASE_D * scale;
+                    let delta = params.base_delta / scale;
+                    let k2 = BASE_k2 / scale;
+
+                    const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
+                    F[0] = params.base_y0[0] * scale; N[0] = params.base_y0[1]; C[0] = params.base_y0[2] * scale; Eq[0] = params.base_y0[3];
+
+                    let policy_triggered = false;
+                    let trigger_year = null;
+
+                    for(let i = 1; i < steps; i++) {
+                        let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
+                        let up = 0.8, us = 0.05, ue = 0.05; 
+                        let is_crisis = false;
+                    
+                        if (prev_F < D * f_thresh) {
+                            up = 0.8; us = 0.1; ue = 0.1; is_crisis = true;
+                        } else if (prev_N < n_thresh) {
+                            up = 0.4; us = 0.5; ue = 0.1; is_crisis = true;
+                        } else if (prev_C < 20.0 * scale) {
+                            up = 0.6; us = 0.2; ue = 0.2; is_crisis = true;
+                        }
+                        
+                        if (is_crisis && !policy_triggered) {
+                            policy_triggered = true;
+                            trigger_year = i * dt;
                         }
 
                         let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
@@ -704,7 +657,6 @@
                     }
                     
                     const plot_F = [];
-                    // Scale down by 1,000,000 for readable graphing
                     for(let i = 0; i < steps; i += 10) plot_F.push(F[i] / 1000000);
                     plot_F.push(F[steps-1] / 1000000);
 
@@ -712,6 +664,83 @@
                         label: name, data: plot_F, borderColor: params.color, backgroundColor: 'transparent',
                         fill: false, yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.2
                     });
+
+                    if (trigger_year !== null) {
+                        chartAnnotations['line' + triggerCount] = {
+                            type: 'line', xMin: trigger_year, xMax: trigger_year,
+                            borderColor: params.color, borderWidth: 2, borderDash: [2, 2],
+                            label: { content: 'Trigger', display: false }
+                        };
+                        triggerCount++;
+                    }
+                }
+            }
+
+            // --- OPTION 4: POLITICAL DELAY ---
+            else if (mode === 'delay') {
+                yAxisTitle = 'Total Food (Millions)';
+                stateScenarios['Louisiana (High Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_la').value);
+                stateScenarios['Connecticut (Avg Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_ct').value);
+                stateScenarios['New Hampshire (Low Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_nh').value);
+
+                let triggerCount = 0;
+
+                for (const [name, params] of Object.entries(stateScenarios)) {
+                    let scale = params.pop / BASE_POP;
+                    let D = BASE_D * scale;
+                    let delta = params.base_delta / scale;
+                    let k2 = BASE_k2 / scale;
+                    let target_year = params.intervention_year;
+
+                    const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
+                    F[0] = params.base_y0[0] * scale; N[0] = params.base_y0[1]; C[0] = params.base_y0[2] * scale; Eq[0] = params.base_y0[3];
+
+                    let policy_triggered = false;
+                    let trigger_year = null;
+
+                    for(let i = 1; i < steps; i++) {
+                        let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
+                        let current_time = i * dt;
+                        let up, us, ue;
+
+                        if (current_time < target_year) {
+                            up = 0.8; us = 0.05; ue = 0.05;
+                        } else {
+                            up = 0.8; us = 0.10; ue = 0.10; 
+                            if (!policy_triggered) {
+                                policy_triggered = true;
+                                trigger_year = current_time;
+                            }
+                        }
+                        
+                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
+                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
+                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+
+                        F[i] = Math.max(0, prev_F + (dF * dt));
+                        N[i] = Math.max(0, prev_N + (dN * dt));
+                        C[i] = Math.max(0, prev_C + (dC * dt));
+                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                    }
+                    
+                    const plot_F = [];
+                    for(let i = 0; i < steps; i += 10) plot_F.push(F[i] / 1000000);
+                    plot_F.push(F[steps-1] / 1000000);
+
+                    datasets.push({
+                        label: name, data: plot_F, borderColor: params.color, backgroundColor: 'transparent',
+                        fill: false, yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.2
+                    });
+
+                    if (trigger_year !== null && trigger_year < totalYears) {
+                        chartAnnotations['line' + triggerCount] = {
+                            type: 'line', xMin: trigger_year, xMax: trigger_year,
+                            borderColor: params.color, borderWidth: 2, borderDash: [2, 2],
+                            label: { content: 'Act', display: false }
+                        };
+                        triggerCount++;
+                    }
                 }
             }
 
@@ -726,10 +755,14 @@
                         pan: { enabled: true, mode: 'x' }, 
                         zoom: { wheel: { enabled: false }, pinch: { enabled: true }, mode: 'x' } 
                     },
+                    annotation: {
+                        annotations: chartAnnotations
+                    },
                     title: { display: false } 
                 },
                 scales: { 
                     x: { 
+                        type: 'linear',
                         title: { display: true, text: 'Time (Years)' }, 
                         ticks: { 
                             callback: function(val, index) {
@@ -762,9 +795,6 @@
                 options: chartConfig
             });
         }
-
-        toggleInputs();
-        runSimulation();
     </script>
 </body>
 </html>
