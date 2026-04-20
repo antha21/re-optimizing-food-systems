@@ -8,9 +8,9 @@
     @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
 
     body { 
-        margin: 0; padding: 0; overflow: hidden; background: #000; 
+        margin: 0; overflow: hidden; background: #000; 
         font-family: 'Rajdhani', sans-serif; color: #fff; user-select: none; 
-        /* Prevent pull-to-refresh and zooming on mobile */
+        /* Prevents pull-to-refresh and screen panning on mobile */
         touch-action: none;
         -webkit-touch-callout: none;
     }
@@ -25,12 +25,11 @@
         background: rgba(10, 15, 30, 0.95); backdrop-filter: blur(10px); color: #fff;
     }
     
-    #bootScreen { z-index: 100; cursor: pointer; background: #000; }
-    #loadingScreen { background: #000; z-index: 90; transition: opacity 0.5s; display: none; }
+    #loadingScreen { background: #000; z-index: 100; transition: opacity 0.5s; }
     .loader-bar { width: 400px; max-width: 80%; height: 6px; background: #222; margin-top: 20px; border-radius: 3px; overflow: hidden; }
     .loader-fill { width: 0%; height: 100%; background: #00f3ff; transition: width 2.5s ease-out; }
 
-    #terminalScreen { display: none; position: relative; }
+    #terminalScreen { display: none; }
     #pauseScreen { display: none; background: rgba(0, 5, 15, 0.85); z-index: 50; }
     #gameOverScreen { display: none; background: rgba(200, 0, 20, 0.9); z-index: 60; }
     
@@ -58,37 +57,32 @@
     }
     .hud-panel {
         background: rgba(10, 15, 25, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 150, 255, 0.3);
-        padding: 10px 20px; border-radius: 8px; display: flex; gap: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        padding: 15px 25px; border-radius: 8px; display: flex; gap: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     .hud-stat { display: flex; flex-direction: column; align-items: flex-start; }
-    .hud-label { color: #88aadd; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-    .hud-value { color: #fff; font-size: 32px; font-weight: bold; line-height: 1; }
+    .hud-label { color: #88aadd; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .hud-value { color: #fff; font-size: 42px; font-weight: bold; line-height: 1; }
     .val-good { color: #00ffaa; }
     .val-warn { color: #ffaa00; }
     .val-crit { color: #ff3333; }
 
     .slots { display: flex; gap: 10px; margin: 30px 0; flex-wrap: wrap; justify-content: center; }
     .slot { 
-        min-width: 50px; height: 50px; padding: 0 5px; box-sizing: border-box;
+        min-width: 65px; height: 65px; padding: 0 10px; box-sizing: border-box;
         border: 2px dashed #446; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; background: rgba(0,0,0,0.5);
+        display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; background: rgba(0,0,0,0.5);
     }
     .slot.filled { border: 2px solid #00f3ff; color: #fff; background: rgba(0, 85, 255, 0.3); box-shadow: 0 0 15px rgba(0, 150, 255, 0.4); }
     
-    .inventory { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px; max-width: 900px; padding: 0 10px; }
+    .inventory { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px; max-width: 900px; }
     .token { 
-        padding: 10px 15px; border: 1px solid #446; border-radius: 6px; background: rgba(20, 30, 50, 0.8); 
-        font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #aaddff;
+        padding: 15px 25px; border: 1px solid #446; border-radius: 6px; background: rgba(20, 30, 50, 0.8); 
+        font-size: 22px; font-weight: bold; cursor: pointer; transition: 0.2s; color: #aaddff;
     }
     .token:hover { background: #00f3ff; color: #000; border-color: #00f3ff; transform: scale(1.05); }
-    
-    #term-feedback { font-size: 20px; margin-top: 20px; height: 30px; font-weight: bold; text-align: center; }
-    #term-time {
-        position: absolute; top: 15px; right: 20px; font-size: 32px; font-weight: bold; color: #ffaa00; text-shadow: 0 0 15px rgba(255, 170, 0, 0.5);
-    }
+    #term-feedback { font-size: 24px; margin-top: 20px; height: 30px; font-weight: bold; }
 
-    /* ================= MOBILE CONTROLS ================= */
-    /* Use max-width 900px to ensure it catches most phones and tablets in landscape */
+    /* ================= MOBILE CONTROLS & HUD ADJUSTMENTS ================= */
     #mobile-controls {
         position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
         pointer-events: none; z-index: 35; display: none;
@@ -96,23 +90,25 @@
     
     @media (max-width: 900px) { 
         #mobile-controls { display: block; } 
-        /* Hide HUD stats on mobile to save screen space for controls, we'll keep it minimal */
+        
+        /* Shrink HUD on mobile so all 4 stats fit */
         .hud-panel { padding: 5px 10px; gap: 10px; }
         .hud-label { font-size: 10px; }
         .hud-value { font-size: 20px; }
+        #hud-container { bottom: 10px; left: 10px; right: 10px; }
         
-        /* Make terminal text fit on phone */
+        /* Shrink terminal elements so they fit on screen */
         #terminalScreen h2 { font-size: 32px; }
-        #terminalScreen p { font-size: 16px; padding: 0 20px; text-align: center; }
+        #terminalScreen p { font-size: 16px; padding: 0 15px; text-align: center; }
         .slots { margin: 15px 0; gap: 5px; }
-        .slot { min-width: 40px; height: 40px; font-size: 16px; }
-        .token { padding: 8px 12px; font-size: 16px; }
-        #term-time { font-size: 24px; top: 10px; right: 10px; }
+        .slot { min-width: 40px; height: 40px; font-size: 16px; padding: 0 5px; }
+        .token { padding: 8px 12px; font-size: 16px; margin: 2px; }
+        #term-time { font-size: 24px !important; top: 10px !important; right: 15px !important; }
         #terminalScreen button { font-size: 16px; padding: 10px 20px; margin: 5px; }
     }
     
     #joystick-base {
-        position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
+        position: absolute; bottom: 60px; left: 30px; width: 120px; height: 120px;
         background: rgba(10, 15, 30, 0.5); border: 2px solid rgba(0, 243, 255, 0.4);
         border-radius: 50%; pointer-events: auto; touch-action: none;
     }
@@ -124,7 +120,7 @@
     }
     
     #fire-btn {
-        position: absolute; bottom: 40px; right: 30px; width: 90px; height: 90px;
+        position: absolute; bottom: 70px; right: 30px; width: 90px; height: 90px;
         background: rgba(255, 50, 50, 0.2); border: 2px solid rgba(255, 50, 50, 0.6);
         border-radius: 50%; pointer-events: auto; touch-action: none;
         display: flex; justify-content: center; align-items: center;
@@ -133,13 +129,12 @@
     }
     #fire-btn:active { background: rgba(255, 50, 50, 0.5); transform: scale(0.95); }
 
-    /* Mobile Pause Button */
     #mobile-pause-btn {
         position: absolute; top: 20px; right: 20px; width: 50px; height: 50px;
         background: rgba(10, 15, 30, 0.7); border: 2px solid rgba(255, 255, 255, 0.4);
         border-radius: 8px; pointer-events: auto; touch-action: none;
         display: flex; justify-content: center; align-items: center;
-        color: #fff; font-size: 24px; font-weight: bold;
+        color: #fff; font-size: 20px; font-weight: bold;
     }
     #mobile-pause-btn:active { background: rgba(255, 255, 255, 0.3); }
 
@@ -157,10 +152,6 @@
         <div id="mobile-pause-btn">||</div>
     </div>
 
-    <div id="bootScreen" class="screen" onclick="bootLevel()">
-        <h1 style="color: #00f3ff; font-size: 28px; animation: blink 1.5s infinite; text-align: center; padding: 0 20px;">CLICK TO INITIALIZE SECTOR</h1>
-    </div>
-
     <div id="loadingScreen" class="screen">
         <h2 style="color:#fff;">GENERATING SECTOR...</h2>
         <div class="subtitle" id="loadLvlText">Level Data</div>
@@ -170,21 +161,21 @@
     <div id="hud-container" style="display: none;">
         <div class="hud-panel">
             <div class="hud-stat">
-                <span class="hud-label">Integrity</span>
+                <span class="hud-label">Integrity (HP)</span>
                 <span id="hud-hp" class="hud-value val-good">100</span>
             </div>
             <div class="hud-stat">
-                <span class="hud-label">Ammo</span>
+                <span class="hud-label">Ammunition</span>
                 <span id="hud-ammo" class="hud-value">15/15</span>
             </div>
         </div>
         <div class="hud-panel" style="border-color: rgba(255, 170, 0, 0.4);">
             <div class="hud-stat">
-                <span class="hud-label">Time</span>
+                <span class="hud-label">Time Remaining</span>
                 <span id="hud-time" class="hud-value val-warn">00:00</span>
             </div>
             <div class="hud-stat">
-                <span class="hud-label">Params</span>
+                <span class="hud-label">Parameters</span>
                 <span id="hud-tok" class="hud-value">0/0</span>
             </div>
         </div>
@@ -192,19 +183,19 @@
 
     <div id="pauseScreen" class="screen">
         <h1 style="color: #fff; text-shadow: 0 0 20px #000;">SYSTEM PAUSED</h1>
-        <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 30px;">
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
             <button onclick="togglePause()" style="background: #00ffaa; color: #000;">CONTINUE</button>
             <button onclick="quitGame()" style="background: #ff3333; color: #fff;">ABORT TO MENU</button>
         </div>
     </div>
 
     <div id="terminalScreen" class="screen">
-        <div id="term-time">00:00</div>
+    <div id="term-time" style="position: absolute; top: 30px; right: 40px; font-size: 42px; font-weight: bold; color: #ffaa00; text-shadow: 0 0 15px rgba(255, 170, 0, 0.5);">00:00</div>
         <h2>Terminal Uplink</h2>
-        <p style="color: #88aadd;">Assemble the governing ODE. Select parameters from your inventory.</p>
+        <p style="color: #88aadd; font-size: 22px;">Assemble the governing ODE. Select parameters from your inventory.</p>
         <div class="slots" id="equation-slots"></div>
         <div class="inventory" id="token-inventory"></div>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
             <button onclick="submitEquation()" style="background: #00ffaa; color: #000;">INITIATE SEQUENCE</button>
             <button onclick="undoToken()" style="background: #ffaa00; color: #000;">&#9003; UNDO</button>
             <button onclick="closeTerminal()" style="background: #334; color: #fff;">CLOSE TERMINAL</button>
@@ -222,28 +213,28 @@
 
 <script>
 // ================= AUDIO SETUP =================
-const sndClick = new Audio("Clicker.mp3");
-const sndPickupVar = new Audio("Item Pick up Counter Strike Source  Sound Effect for editing.mp3");
-const sndEnemyDeath = new Audio("RobotDeath.mp3");
-const sndEnemyExplosion = new Audio("RobotExplosion.mp3");
-const sndHit = new Audio("MetalHit.mp3"); 
-const sndEnemyShoot = new Audio("Desertgun.mp3"); 
-const sndShoot = new Audio("RevolverSound.mp3");
-const sndPlayerHit = new Audio("EnemyHit.mp3");
-const sndHealthPickup = new Audio("ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3");
-const sndAmmoPickup = new Audio("ytmp3free.cc_picking-up-an-object-sound-effect-block-city-wars-youtubemp3free.org.mp3");
-const bgm = new Audio();
+const sndClick = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Clicker.mp3");
+const sndPickupVar = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Item%20Pick%20up%20Counter%20Strike%20Source%20%20Sound%20Effect%20for%20editing.mp3");
+const sndEnemyDeath = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/RobotDeath.mp3");
+const sndEnemyExplosion = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/RobotExplosion.mp3");
+const sndHit = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/MetalHit.mp3"); 
+const sndEnemyShoot = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Desertgun.mp3"); 
+const sndShoot = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/RevolverSound.mp3");
+const sndPlayerHit = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/EnemyHit.mp3");
+const sndHealthPickup = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3");
+const sndAmmoPickup = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/ytmp3free.cc_picking-up-an-object-sound-effect-block-city-wars-youtubemp3free.org.mp3");
+const bgm = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Time%20Square%20-%20Blinx%20the%20Time%20Sweeper%20Soundtrack.mp3");
 
-sndEnemyDeath.baseVolume = 0.5;
-sndEnemyExplosion.baseVolume = 0.2;
-sndHit.baseVolume = 0.2;          
+sndEnemyDeath.baseVolume = 0.3;
+sndEnemyExplosion.baseVolume = 0.3;
+sndHit.baseVolume = 0.3;          
 sndEnemyShoot.baseVolume = 0.4;   
 bgm.loop = true;
-bgm.volume = 0.8;
-sndShoot.baseVolume = 0.5;
+bgm.volume = 0.6;
+sndShoot.baseVolume = 0.4;
 sndHealthPickup.baseVolume = 0.6;
-sndAmmoPickup.baseVolume = 0.15; 
-sndClick.baseVolume = 0.4; 
+sndAmmoPickup.baseVolume = 0.4;
+sndClick.baseVolume = 0.5;
 
 function playSound(audioObj) {
     if(!audioObj) return;
@@ -270,16 +261,16 @@ function playSpatialSound(audioObj, dist) {
 const LEVEL_DATA = {
     1: { target: ["dF/dt", "=", "\\alpha", "C", "N", "u_p", "-", "\\beta", "P", "-", "\\gamma", "F"], color: "#0055ff", spawn: {x: 2.5, y: 2.5},
          theme: { skyTop: "#5abbff", skyBot: "#e0f2ff", floorTop: "#99a0a8", floorBot: "#c0c8d0", wallBase: "#e8edf5", wallLine: "#c0cadd", wallIndent: "#d0d8e5" },
-         music: "Time Square - Blinx the Time Sweeper Soundtrack.mp3" },
+         music: "file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Time%20Square%20-%20Blinx%20the%20Time%20Sweeper%20Soundtrack.mp3"},
     2: { target: ["dN/dt", "=", "r", "N", "(", "1", "-", "N/K", ")", "-", "\\delta", "F", "u_p", "+", "\\sigma", "u_s"], color: "#00aaff", spawn: {x: 1.5, y: 1.5},
          theme: { skyTop: "#0a2a1a", skyBot: "#1a4a2a", floorTop: "#1f3d1f", floorBot: "#2a5c2a", wallBase: "#2c4c2c", wallLine: "#1a3a1a", wallIndent: "#3c5c3c" },
-         music: "Untitled (2).mp3" },
+         music: "file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Untitled%20(2).mp3" },
     3: { target: ["dC/dt", "=", "p_margin", "(", "\\beta", "P", ")", "-", "c", "F", "-", "(", "u_s", "+", "u_e", ")", "C"], color: "#ff8800", spawn: {x: 2.5, y: 2.5},
          theme: { skyTop: "#000000", skyBot: "#111122", floorTop: "#222222", floorBot: "#111111", wallBase: "#333344", wallLine: "#222233", wallIndent: "#444455" },
-         music: "Subway Gravestones.mp3" },
+         music: "file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Subway%20Gravestones.mp3"},
     4: { target: ["dEq/dt", "=", "k_1", "u_e", "+", "k_2", "max(0, F-D)", "-", "\\mu", "Eq"], color: "#aa00ff", spawn: {x: 12.5, y: 21.5},
          theme: { skyTop: "#2a0033", skyBot: "#4a0055", floorTop: "#220033", floorBot: "#110022", wallBase: "#3a0055", wallLine: "#2a0044", wallIndent: "#4a0066" },
-         music: "Whoa.mp3" }
+         music: "file:///C:/Users/anthp/OneDrive/Desktop/ODEs%203D/Whoa.mp3"}
 };
 
 function formatMath(str) {
@@ -346,7 +337,7 @@ const MAPS = {
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
-        [1,0,0,0,0,0,1,2,2,0,0,0,0,0,2,1,0,0,0,0,0,0,0,1],
+        [1,0,0,0,0,0,1,2,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -360,7 +351,7 @@ const MAPS = {
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ],
-    // 2: Adjusted Opened Up Maze
+    // 2: Tight Maze
     2: [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -483,23 +474,17 @@ function isWall(x, y) {
     return true; 
 }
 
-function bootLevel() {
-    document.getElementById('bootScreen').style.display = 'none';
-    const urlParams = new URLSearchParams(window.location.search);
-    let startLvl = parseInt(urlParams.get('level')) || 1;
-    startGame(startLvl);
-}
+// Parse Level from URL
+const urlParams = new URLSearchParams(window.location.search);
+let currentLevel = parseInt(urlParams.get('level')) || 1;
 
-function startGame(lvl) {
-    playSound(sndClick);
-    
-    currentLevel = lvl;
-    targetEquation = LEVEL_DATA[lvl].target;
-    map = MAPS[lvl];
-    generateTheme(LEVEL_DATA[lvl].theme);
-    
+function initGameEngine() {
+    targetEquation = LEVEL_DATA[currentLevel].target;
+    map = MAPS[currentLevel];
+    generateTheme(LEVEL_DATA[currentLevel].theme);
+
     bgm.src = LEVEL_DATA[currentLevel].music; 
-
+        
     player.x = LEVEL_DATA[currentLevel].spawn.x; 
     player.y = LEVEL_DATA[currentLevel].spawn.y; 
     player.angle = Math.PI/4; 
@@ -509,9 +494,6 @@ function startGame(lvl) {
     
     // Level 1: 2 min (120s) | Level 2: 4 min (240s) | Others: 3 min (180s)
     gameTimer = (currentLevel === 1) ? 120.0 : (currentLevel === 2 ? 240.0 : 180.0);
-    
-    bullets = []; enemyBullets = []; drops = []; tokens = []; enemies = [];
-    assembled = [];
     
     let emptyTiles = [];
     for(let y=1; y<map.length-1; y++) {
@@ -534,8 +516,8 @@ function startGame(lvl) {
     }
 
     document.getElementById("loadLvlText").innerText = `SECTOR ${currentLevel}: ${LEVEL_DATA[currentLevel].target[0]} PARAMETERS`;
-    document.getElementById("loadingScreen").style.display = "flex";
     
+    // Loading Bar Animation
     setTimeout(() => { document.getElementById("loaderBar").style.width = "100%"; }, 100);
     
     setTimeout(() => {
@@ -546,10 +528,8 @@ function startGame(lvl) {
             updateHUD();
             gameState = "play";
             lastTime = performance.now();
-            
             bgm.currentTime = 0;
             bgm.play().catch(e => console.warn(e));
-            
             showMsg("SYSTEM ENGAGED. RECOVER PARAMETERS.");
         }, 500);
     }, 2800);
@@ -646,8 +626,7 @@ function togglePause() {
 function quitGame() {
     playSound(sndClick);
     bgm.pause();
-    bgm.currentTime = 0;
-    window.location.href = 'index.html';
+    window.location.href = 'index1.html';
 }
 
 function showMsg(text) {
@@ -678,6 +657,7 @@ function updateTimerDisplay() {
     let secs = Math.floor(gameTimer % 60).toString().padStart(2, '0');
     let formattedTime = `0${mins}:${secs}`;
     
+    // Updates the main HUD timer
     let timeEl = document.getElementById("hud-time");
     timeEl.innerText = formattedTime;
     if(gameTimer < 30) timeEl.className = "hud-value val-crit";
