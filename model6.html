@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model 5: SPDE Stochastic Spatial Dynamics</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navBg: '#0F172A', navHover: '#1E293B', navText: '#F8FAFC', navAccent: '#3B82F6',
+                        mainBg: '#F8FAFC', secBg: '#FFFFFF', altBg: '#F1F5F9',
+                        priAccent: '#E11D48', secAccent: '#BE123C', hlAccent: '#9F1239', /* Rose/Crimson Theme */
+                        textDark: '#0F172A', textMuted: '#475569'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --nav-bg: #0F172A;       
+            --nav-hover: #1E293B; 
+            --nav-text: #F8FAFC; 
+            --main-bg: #F8FAFC;      
+            --panel-bg: #FFFFFF;     
+            --accent-pri: #E11D48;   /* Rose Red */
+            --accent-sec: #BE123C;   
+            --accent-hl: #9F1239;
+            --text-dark: #0F172A;    
+            --text-muted: #475569;
+            --nav-height: 70px; 
+            --footer-height: 60px; 
+        }
+
+        html { overflow-y: scroll; overflow-x: hidden; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--main-bg); 
+            color: var(--text-dark); 
+        }
+        
+        .academic-bg {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(190, 18, 60, 0.05) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(159, 18, 57, 0.03) 0px, transparent 50%);
+            background-size: 100% 100%;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+        }
+        
+        .glass-nav { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(225, 29, 72, 0.2); }
+        
+        .page-wrapper { padding-top: var(--nav-height); min-height: calc(100vh - var(--footer-height)); display: flex; flex-direction: column; }
+        .page-section { flex: 1; padding: 0.35rem 10% 5rem 10%; animation: fadeIn 0.6s ease-out; box-sizing: border-box; display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .header-container { text-align: left; margin-bottom: 2.5rem; }
+        
+        .live-badge { 
+            display: inline-flex; align-items: center; gap: 8px; 
+            background: #FFF1F2; color: var(--accent-pri); 
+            padding: 6px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.5rem;
+            border: 1px solid #FECDD3;
+            box-shadow: 0 4px 10px rgba(225, 29, 72, 0.15);
+        }
+
+    	.equation { font-size: 1.0em; color: var(--text-dark); font-weight: 500; margin-left: 2px; }
+    	p.subtitle .equation { font-size: 1.0em; display: block; margin-top: 0.85rem; margin-bottom: 0.25rem; }    
+        
+        .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
+        
+        .header-container h2 { font-size: 2.5rem; font-weight: 900; margin: 0 0 0.5rem 0; letter-spacing: -0.04em; line-height: 1.4; color: var(--text-dark); display: inline-block; }
+        p.subtitle { font-size: 1.15rem; color: var(--text-muted); max-width: 900px; margin: 0; line-height: 1.6; font-weight: 400; }
+
+        .playground-container { display: flex; gap: 2.5rem; flex-wrap: wrap; align-items: flex-start; }
+        
+        .controls { 
+            flex: 1; min-width: 320px; max-width: 400px; background: var(--panel-bg); padding: 2.5rem; 
+            border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); 
+            display: flex; flex-direction: column; gap: 1.25rem; 
+            
+            position: sticky; top: 90px;
+            height: fit-content; 
+            max-height: calc(100vh - 120px); 
+            overflow-y: auto;
+        }
+
+        .controls::-webkit-scrollbar { width: 6px; }
+        .controls::-webkit-scrollbar-track { background: var(--main-bg); border-radius: 10px; }
+        .controls::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        .controls::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        .controls h3 { margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); border-bottom: 1px solid #E2E8F0; padding-bottom: 0.75rem; }
+        
+        .param-category { margin-top: 0.5rem; padding-bottom: 0.25rem; font-size: 0.75rem; font-weight: 800; color: #64748B; text-transform: uppercase; letter-spacing: 1px; }
+        .params-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .controls label { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+        .controls input { padding: 0.65rem 0.85rem; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; background-color: var(--main-bg); color: var(--text-dark); font-family: 'JetBrains Mono', monospace; font-weight: 600; transition: all 0.3s ease; width: 100%; box-sizing: border-box;}
+        .controls input:focus { outline: none; border-color: var(--accent-pri); box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15); background-color: var(--panel-bg); }
+        
+        .controls button.run-btn { background: linear-gradient(135deg, var(--accent-pri), var(--accent-sec)); color: white; border: none; padding: 1.1rem; font-size: 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; margin-top: 1rem; box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3); width: 100%; }
+        .controls button.run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(190, 18, 60, 0.4); }
+
+        .controls button.reset-btn { background: #F1F5F9; color: var(--text-muted); border: 1px solid #CBD5E1; padding: 0.85rem; font-size: 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; margin-top: 0.25rem; width: 100%; }
+        .controls button.reset-btn:hover { background: #E2E8F0; color: var(--text-dark); border-color: #94A3B8;}
+        
+        .visualizer { flex: 2.5; min-width: 450px; display: flex; flex-direction: column; gap: 2.5rem; }
+        
+        .chart-box { 
+            background-color: var(--panel-bg); border: 1px solid #E2E8F0; border-radius: 12px; 
+            padding: 0; 
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); transition: box-shadow 0.3s ease; 
+            height: 700px; width: 100%; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .chart-box:hover { box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.1); }
+        
+        .chart-container { position: relative; flex-grow: 1; width: 100%; height: 100%; }
+
+        .chart-toolbar {
+            display: flex; justify-content: center; align-items: center; gap: 0.75rem;
+            margin-top: 1rem; padding-top: 1rem; padding-bottom: 1rem; border-top: 1px solid #E2E8F0;
+        }
+        .tool-btn {
+            background: #F8FAFC; border: 1px solid #CBD5E1; color: #475569; padding: 0.5rem 0.75rem;
+            border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .tool-btn svg { width: 1.25rem; height: 1.25rem; }
+        .tool-btn:hover { background: #E2E8F0; color: #0F172A; }
+        .tool-btn.active { background: #FFF1F2; color: var(--accent-pri); border-color: #FECDD3; }
+        
+        footer { background-color: var(--nav-bg); color: #94A3B8; text-align: center; height: 60px; line-height: 60px; font-size: 0.9rem; width: 100%; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(255,255,255,0.05); margin-top: auto;}
+
+        .scenario-bar {
+            background: var(--panel-bg); border: 1px solid #E2E8F0; border-radius: 12px; padding: 1rem 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); display: flex; align-items: center; gap: 1.5rem; width: 100%; margin-bottom: 2rem;
+        }
+        .scenario-bar label { font-weight: 800; color: var(--accent-pri); font-size: 1.05rem; margin: 0; }
+        .scenario-bar select {
+            padding: 0.6rem 1rem; border: 2px solid var(--accent-pri); border-radius: 8px; 
+            font-size: 1rem; background-color: var(--main-bg); color: var(--text-dark); 
+            font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; outline: none; flex-grow: 1;
+        }
+        .scenario-bar select:focus { outline: none; box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2); }
+
+        @media (max-width: 1024px) {
+            .controls { max-width: 100%; position: relative; top: 0; max-height: 100%; }
+            .visualizer { min-width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .page-section { padding: 1rem 5% 3rem 5% !important; }
+            .header-container h2 { font-size: 2rem !important; }
+            .playground-container { gap: 1.5rem !important; }
+            .params-grid { grid-template-columns: 1fr; } 
+            .scenario-bar { flex-direction: column; align-items: flex-start; gap: 0.75rem;}
+            .scenario-bar select { width: 100%; }
+            .chart-box { height: 500px !important; width: 100% !important; }
+            footer { height: auto !important; line-height: 1.5 !important; padding: 1rem !important; font-size: 0.75rem !important; }
+        }
+    </style>
+</head>
+<body onload="runSimulation()">
+    
+    <div class="academic-bg"></div>
+
+    <nav class="glass-nav sticky inset-x-0 top-0 z-50 shadow-[0_4px_20px_rgba(15,23,42,0.2)] transform-gpu">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[70px]">
+                <div class="flex-shrink-0 font-extrabold text-[1.5rem] tracking-tight text-navText">
+                    BioEcon<span class="text-secAccent">.</span>
+                </div>
+                <div class="hidden md:block">
+                    <ul class="ml-10 flex items-baseline space-x-10 m-0 p-0 list-none">
+                        <li><a href="index.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(225,29,72,0.5)] transition-all duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(225,29,72,0.5)] transition-all duration-300">Model Framework</a></li>
+                        <li><a href="playground.html" class="text-navText font-medium text-[1.05rem] drop-shadow-[0_0_12px_rgba(225,29,72,0.5)] transition-all duration-300"> Playground</a></li>
+                        <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-[1.05rem] hover:text-navText hover:drop-shadow-[0_0_12px_rgba(225,29,72,0.5)] transition-all duration-300">References</a></li>
+                    </ul>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-navText hover:text-secAccent focus:outline-none transition-colors">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-[70px] left-0 w-full bg-navBg/95 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+            <ul class="flex flex-col px-6 py-6 space-y-4 text-center">
+                <li><a href="index.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Home</a></li>
+                <li><a href="about.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Model Framework</a></li>
+                <li><a href="playground.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">Playground</a></li>
+                <li><a href="sources.html" class="text-[#CBD5E1] font-medium text-lg block hover:text-secAccent transition-colors">References</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="page-wrapper flex-grow">
+        <section id="playground" class="page-section">
+            
+            <div class="mb-6">
+                <a href="playground.html" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-priAccent transition-colors mb-6 tracking-wide">
+                    &larr; Back to Hub
+                </a>
+                <br> 
+                
+                <div class="border-b-[3px] border-[#E2E8F0] pb-6 w-full header-container">
+                     <h2>SPDE Stochastic Spatial Dynamics</h2>
+                    <p class="subtitle">
+                        Adjust the parameters below to simulate a Stochastic Partial Differential Equation integrating spatial food diffusion and random market volatility. The 3D surface updates based on:
+                        <span class="equation">\( dF = \left( \alpha C N u_p - \beta P - \gamma F + D_F \frac{\partial^2 F}{\partial x^2} \right) dt + \sigma_F F dW_F \)</span>
+                        <span class="equation">\( dC = \left( p_{margin}(\beta P) - c F - (u_s + u_e)C + D_C \frac{\partial^2 C}{\partial x^2} \right) dt + \sigma_C C dW_C \)</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="scenario-bar">
+                <label for="model_selector">Select Scenario View:</label>
+                <select id="model_selector" onchange="runSimulation();">
+                    <option value="base">1. SPDE Standard Market Shock Simulation</option>
+                </select>
+            </div>
+
+            <div class="playground-container">
+                
+                <div class="controls">
+                    <h3>System Parameters</h3>
+                    
+                    <div id="params_spde" class="params-grid" style="display: grid;">
+                        
+                        <div class="param-category" style="grid-column: span 2;">Core Biology & Economics</div>
+                        <div class="input-group"><label for="val_alpha">Prod. Effic. \(\alpha\)</label><input type="number" id="val_alpha" value="0.35" step="0.01"></div>
+                        <div class="input-group"><label for="val_beta">Consumption \(\beta\)</label><input type="number" id="val_beta" value="0.05" step="0.01"></div>
+                        <div class="input-group"><label for="val_gamma">Spoilage \(\gamma\)</label><input type="number" id="val_gamma" value="0.02" step="0.01"></div>
+                        <div class="input-group"><label for="val_pop">Population \(P\)</label><input type="number" id="val_pop" value="100" step="1"></div>
+                        <div class="input-group"><label for="val_pmargin">Margin \(p_{m}\)</label><input type="number" id="val_pmargin" value="2.5" step="0.1"></div>
+                        <div class="input-group"><label for="val_c">Base Cost \(c\)</label><input type="number" id="val_c" value="0.05" step="0.01"></div>
+                        
+                        <div class="param-category" style="grid-column: span 2;">Policy Parameters</div>
+                        <div class="input-group"><label for="val_up">Prod. Effort \(u_p\)</label><input type="number" id="val_up" value="1.0" step="0.05"></div>
+                        <div class="input-group"><label for="val_us">Sust. Effort \(u_s\)</label><input type="number" id="val_us" value="0.01" step="0.01"></div>
+                        <div class="input-group"><label for="val_ue">Equit. Effort \(u_e\)</label><input type="number" id="val_ue" value="0.01" step="0.01"></div>
+
+                        <div class="param-category" style="grid-column: span 2;">Spatial & Stochastic Constants</div>
+                        <div class="input-group"><label for="val_df">Food Diff. \(D_F\)</label><input type="number" id="val_df" value="5.0" step="0.5"></div>
+                        <div class="input-group"><label for="val_sigmaf">Food Vol. \(\sigma_F\)</label><input type="number" id="val_sigmaf" value="0.15" step="0.01"></div>
+                        <div class="input-group"><label for="val_dc">Cap. Diff. \(D_C\)</label><input type="number" id="val_dc" value="2.0" step="0.5"></div>
+                        <div class="input-group"><label for="val_sigmac">Cap. Vol. \(\sigma_C\)</label><input type="number" id="val_sigmac" value="0.10" step="0.01"></div>
+
+                    </div>
+                    
+                    <button class="run-btn" onclick="runSimulation()">Run Simulation</button>
+                    <button class="reset-btn" onclick="resetDefaults()">Reset to Defaults</button>
+                </div>
+                
+                <div class="visualizer">
+                    <div class="chart-box" id="main-chart-box">
+                        <div class="chart-container" id="plotly-container">
+                            </div>
+                        
+                        <div class="chart-toolbar">
+                            <button class="tool-btn active" id="panBtn" onclick="togglePan('panBtn')" title="Toggle Pan/Orbit">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path></svg>
+                            </button>
+                            <button class="tool-btn" onclick="customZoom(0.8)" title="Zoom In">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                            </button>
+                            <button class="tool-btn" onclick="customZoom(1.2)" title="Zoom Out">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+                            </button>
+                            <button class="tool-btn" onclick="resetCustomZoom()" title="Reset View">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                            <button class="tool-btn" onclick="downloadChart('spde_simulation.png')" title="Download Image">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
+    </footer>
+
+    <script>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if(btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
+
+        const defaultValues = {
+            val_alpha: 0.35, val_beta: 0.05, val_gamma: 0.02, val_pop: 100, 
+            val_pmargin: 2.5, val_c: 0.05, val_up: 1.0, val_us: 0.01, val_ue: 0.01,
+            val_df: 5.0, val_sigmaf: 0.15, val_dc: 2.0, val_sigmac: 0.10
+        };
+
+        function resetDefaults() {
+            for (const [id, val] of Object.entries(defaultValues)) {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            }
+            runSimulation();
+            resetCustomZoom();
+        }
+
+        // Custom Toolbar Plotly Camera Interactivity
+        function togglePan(btnId) {
+            let btn = document.getElementById(btnId);
+            let gd = document.getElementById('plotly-container');
+            if(!gd._fullLayout) return;
+            
+            let currentMode = gd._fullLayout.scene.dragmode;
+            let newMode = currentMode === 'pan' ? 'orbit' : 'pan';
+            Plotly.relayout(gd, {'scene.dragmode': newMode});
+            
+            if (newMode === 'pan') btn.classList.add('active'); 
+            else btn.classList.remove('active');
+        }
+
+        function customZoom(factor) {
+            let gd = document.getElementById('plotly-container');
+            if(!gd._fullLayout) return;
+            let cam = gd._fullLayout.scene.camera;
+            Plotly.relayout(gd, {'scene.camera': {
+                eye: {x: cam.eye.x * factor, y: cam.eye.y * factor, z: cam.eye.z * factor},
+                center: cam.center,
+                up: cam.up
+            }});
+        }
+
+        function resetCustomZoom() {
+            let gd = document.getElementById('plotly-container');
+            if(!gd._fullLayout) return;
+            Plotly.relayout(gd, {'scene.camera': { eye: { x: -1.5, y: -1.5, z: 0.8 } }});
+        }
+
+        function downloadChart(filename) {
+            let gd = document.getElementById('plotly-container');
+            Plotly.downloadImage(gd, {format: 'png', filename: filename.replace('.png', ''), width: 1000, height: 700});
+        }
+
+        // Standard Box-Muller transform to generate Gaussian White Noise
+        function generateGaussian() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        function runSimulation() {
+            // Retrieve UI Parameters
+            const alpha = parseFloat(document.getElementById('val_alpha').value);
+            const beta = parseFloat(document.getElementById('val_beta').value);
+            const gamma = parseFloat(document.getElementById('val_gamma').value);
+            const P = parseFloat(document.getElementById('val_pop').value);
+            const pmargin = parseFloat(document.getElementById('val_pmargin').value);
+            const c = parseFloat(document.getElementById('val_c').value);
+            
+            const up = parseFloat(document.getElementById('val_up').value);
+            const us = parseFloat(document.getElementById('val_us').value);
+            const ue = parseFloat(document.getElementById('val_ue').value);
+            
+            const D_F = parseFloat(document.getElementById('val_df').value);
+            const sigma_F = parseFloat(document.getElementById('val_sigmaf').value);
+            const D_C = parseFloat(document.getElementById('val_dc').value);
+            const sigma_C = parseFloat(document.getElementById('val_sigmac').value);
+
+            // Spatial Grid Parameters 
+            const L = 100.0;
+            const nx = 60; 
+            const dx = L / (nx - 1);
+            const x = Array.from({length: nx}, (_, i) => i * dx);
+
+            // Time Domain Parameters
+            const T = 20.0;
+            const dt = 0.005;
+            const nt = Math.floor(T / dt); 
+            
+            // Render arrays (We downsample time so Plotly doesn't crash the browser)
+            const render_step = Math.floor(nt / 80); 
+            
+            let z_data = []; // Will hold the 2D array for Plotly surface
+            let y_time = []; // Time labels
+            
+            // Current states
+            let F = new Array(nx).fill(0);
+            let C = new Array(nx).fill(50.0);
+            let N = new Array(nx).fill(0.8); // Assumed uniform static baseline for this projection
+
+            // Initial "Breadbasket" Conditions for Food
+            for (let j = 0; j < nx; j++) {
+                F[j] = 20 + 80 * Math.exp(-0.05 * Math.pow(x[j] - L/2, 2));
+            }
+
+            z_data.push([...F]);
+            y_time.push(0);
+
+            // Euler-Maruyama Integration Loop
+            for (let i = 1; i < nt; i++) {
+                let F_new = new Array(nx).fill(0);
+                let C_new = new Array(nx).fill(0);
+                let laplacian_F = new Array(nx).fill(0);
+                let laplacian_C = new Array(nx).fill(0);
+
+                // Central Finite Difference for interior points
+                for (let j = 1; j < nx - 1; j++) {
+                    laplacian_F[j] = (F[j+1] - 2 * F[j] + F[j-1]) / (dx * dx);
+                    laplacian_C[j] = (C[j+1] - 2 * C[j] + C[j-1]) / (dx * dx);
+                }
+                
+                // Neumann Boundary Conditions (Zero-flux)
+                laplacian_F[0] = (F[1] - F[0]) / (dx * dx);
+                laplacian_F[nx-1] = (F[nx-2] - F[nx-1]) / (dx * dx);
+                
+                laplacian_C[0] = (C[1] - C[0]) / (dx * dx);
+                laplacian_C[nx-1] = (C[nx-2] - C[nx-1]) / (dx * dx);
+
+                // Update Rule
+                for (let j = 0; j < nx; j++) {
+                    let dW_F = generateGaussian() * Math.sqrt(dt);
+                    let dW_C = generateGaussian() * Math.sqrt(dt);
+
+                    let drift_F = alpha * C[j] * N[j] * up - beta * P - gamma * F[j] + D_F * laplacian_F[j];
+                    let diffusion_F = sigma_F * F[j] * dW_F;
+                    
+                    let drift_C = pmargin * (beta * P) - c * F[j] - (us + ue) * C[j] + D_C * laplacian_C[j];
+                    let diffusion_C = sigma_C * C[j] * dW_C;
+                    
+                    F_new[j] = F[j] + drift_F * dt + diffusion_F;
+                    C_new[j] = C[j] + drift_C * dt + diffusion_C;
+                    
+                    // Boundary enforcement
+                    if (F_new[j] < 0) F_new[j] = 0; 
+                    if (C_new[j] < 0) C_new[j] = 0;
+                }
+                
+                F = F_new;
+                C = C_new;
+
+                // Save downsampled frames for plotting
+                if (i % render_step === 0) {
+                    z_data.push([...F]);
+                    y_time.push(parseFloat((i * dt).toFixed(2)));
+                }
+            }
+
+            // Plotly Configuration
+            var data = [{
+                z: z_data,
+                x: x,        // Spatial Distance
+                y: y_time,   // Time
+                type: 'surface',
+                colorscale: 'Viridis',
+                colorbar: { title: 'Food Concentration', len: 0.8, thickness: 20 },
+                hovertemplate: 'Distance: %{x} mi<br>Time: %{y} yrs<br>Food: %{z:.2f}<extra></extra>'
+            }];
+
+            var layout = {
+                title: {
+                    text: 'Food Biomass SPDE with Capital Stochasticity',
+                    font: { family: 'Inter', size: 16, color: '#0F172A', weight: 'bold' }
+                },
+                autosize: true,
+                margin: { l: 0, r: 0, b: 0, t: 50 },
+                scene: {
+                    xaxis: { title: 'Spatial Distance (Miles)', titlefont: { size: 12 }, tickfont: { size: 10 } },
+                    yaxis: { title: 'Time (Years)', titlefont: { size: 12 }, tickfont: { size: 10 } },
+                    zaxis: { title: 'Local Food Biomass', titlefont: { size: 12 }, tickfont: { size: 10 } },
+                    camera: {
+                        eye: { x: -1.5, y: -1.5, z: 0.8 } 
+                    },
+                    dragmode: 'orbit'
+                },
+                paper_bgcolor: '#FFFFFF',
+                plot_bgcolor: '#FFFFFF'
+            };
+
+            var config = {
+                responsive: true,
+                displayModeBar: false, // Hidden to use your custom CSS Toolbar instead
+                displaylogo: false
+            };
+
+            // Capture current camera angle before redrawing to prevent jumping
+            let gd = document.getElementById('plotly-container');
+            if (gd._fullLayout) {
+                layout.scene.camera = gd._fullLayout.scene.camera;
+            }
+
+            Plotly.react('plotly-container', data, layout, config);
+        }
+    </script>
+</body>
+</html>
