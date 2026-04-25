@@ -256,7 +256,7 @@
             <div class="border-b-[2px] border-[#E2E8F0] pb-8 w-full header-container">
                  <h2>History & Framework</h2>
                 <p class="subtitle">
-                    The intersection of biological population dynamics and quantitative economic valuation.
+                    The intersection of biological regeneration, capital economics, and spatial logistics.
                 </p>
             </div>
 
@@ -266,18 +266,18 @@
                     Project Introduction
                 </h3>
                 <p class="content-text">
-                    This project models the complex bioeconomic dynamics of a single-species fishery, specifically focusing on the relationship between biological harvesting and the resulting commercial profit. While traditional biological models evaluate population sustainability in a vacuum, real-world systems are fundamentally driven by economic incentives. 
+                    This project models the complex bioeconomic dynamics of a national food system. While traditional models evaluate agriculture purely as an economic venture, real-world systems are fundamentally bound by environmental and social constraints.
                 </p>
                 <p class="content-text">
-                    By merging these two disciplines, we can analyze how a population of fish behaves under continuous harvesting pressure while simultaneously tracking the profit yielded per unit catch. 
+                    By merging these disciplines, we analyze how agricultural biomass is generated under environmental limits while simultaneously tracking the economic capital and social equity of the state. 
                 </p>
                 <div class="highlight-box">
                     <p class="content-text" style="margin: 0; color: #1E3A8A; font-weight: 600;">
-                        The objective is to progressively advance from a deterministic baseline model to highly complex, stochastic economic environments—evaluating sinusoidal cost fluctuations, abrupt market shocks, and sudden demand surges over a standard season.
+                        The objective is to progressively advance from static baseline Ordinary Differential Equations (ODEs) to highly complex, spatial Stochastic Partial Differential Equations (SPDEs)—evaluating dynamic policy feedback and supply chain logistics.
                     </p>
                 </div>
                 <p class="content-text">
-                    The original systemic architecture was programmed in Python, utilizing the SciPy library for differential equation integration. This web application translates that quantitative mathematical foundation directly into an interactive, browser-based numerical solver.
+                    The systemic architecture utilizes the Method of Lines and Euler-Maruyama integration to numerically solve these spatial equations. This web application translates that quantitative mathematical foundation directly into an interactive, browser-based playground.
                 </p>
             </div>
 
@@ -289,37 +289,50 @@
                     Mathematical Framework
                 </h3>
                 
-                <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3 tracking-tight">Biological Population Dynamics</h4>
+                <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3 tracking-tight">Temporal Dynamics (The 4 ODEs)</h4>
                 
                 <p class="content-text">
-                    The biological dynamics of the fish population are governed by a logistic growth model combined with a harvesting term. The resulting system is described by the following differential equation:
+                    The foundational model evaluates the system as a localized, well-mixed point. We define four linked state variables that balance production, environmental health, wealth, and fairness:
                 </p>
                 
                 <div class="math-block">
-                    $$ \frac{dP}{dt} = rP\left(1 - \frac{P}{K}\right) - qPE(t) $$
+                    $$ \frac{dF}{dt} = \alpha C N u_p - \beta P - \gamma F $$
                 </div>
-                
-                <ul class="list-disc list-inside text-lg text-slate-600 mb-8 ml-4 space-y-2">
-                    <li><strong>\( r \)</strong>: The intrinsic biological growth rate of the species.</li>
-                    <li><strong>\( K \)</strong>: The carrying capacity of the ecosystem.</li>
-                    <li><strong>\( q \)</strong>: The catchability coefficient.</li>
-                    <li><strong>\( E(t) \)</strong>: The fishing effort deployed at time \( t \).</li>
-                </ul>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-10"><strong>Food Production Dynamics:</strong> Tracks agricultural biomass generation versus population consumption and waste.</p>
 
-                <h4 class="text-xl font-semibold text-slate-800 mt-8 mb-3 tracking-tight">Economic Volatility & Option Valuation</h4>
+                <div class="math-block">
+                    $$ \frac{dN}{dt} = r N \left(1 - \frac{N}{K}\right) - \delta F u_p + \sigma u_s $$
+                </div>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-10"><strong>Natural Resource Health:</strong> Models logistic ecological regeneration against the degradation of aggressive industrial farming.</p>
+
+                <div class="math-block">
+                    $$ \frac{dC}{dt} = p_{margin} (\beta P) - c F - (u_s + u_e) C $$
+                </div>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-10"><strong>Economic Capital:</strong> Calculates the state GDP, funded by food sales and drained by production costs and policy intervention taxes.</p>
+
+                <div class="math-block">
+                    $$ \frac{dEq}{dt} = k_1 u_e + k_2 \max(0, F - D) - \mu Eq $$
+                </div>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-12"><strong>Equity Index:</strong> Measures social fairness, improving through active government funding or massive biological food surpluses.</p>
+
+
+                <h4 class="text-xl font-semibold text-slate-800 mt-12 mb-3 tracking-tight">Spatial Logistics & Market Shocks (The 2 SPDEs)</h4>
                 <p class="content-text">
-                    To accurately simulate real-world fisheries, the economic parameters cannot remain static. The baseline profit function is evaluated as the market price per unit minus the operational cost required to harvest that unit. 
-                </p>
-                <p class="content-text">
-                    However, as the models advance, we introduce <strong>Geometric Brownian Motion</strong> to simulate random, realistic fluctuations in market demand and price. Ultimately, the framework bridges resource economics and quantitative finance by applying the <strong>Black-Scholes analytical formula</strong> to the fishery. In this paradigm, unharvested biomass is treated mathematically as a European call option, where the expected discounted profit \( V \) is evaluated based on market volatility and time to maturity.
+                    Real-world food systems are spatially heterogeneous. To account for physical supply chains and regional market shocks, we transition the highly mobile variables (Food and Capital) into SPDEs. We introduce the Laplacian operator (\( \nabla^2 \)) to model physical diffusion and a Gaussian white noise term (\( dW \)) to model unpredictable environmental volatility:
                 </p>
 
                 <div class="math-block">
-                    $$ V = P \cdot \Phi(d_1) - X e^{-\delta \tau} \cdot \Phi(d_2) $$
+                    $$ dF = \left( \alpha C N u_p - \beta P - \gamma F + D_F \frac{\partial^2 F}{\partial x^2} \right) dt + \sigma_F F dW_F $$
                 </div>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-10"><strong>Spatial Food Logistics:</strong> Simulates trucks moving surplus food across infrastructure (\( D_F \)) while weathering regional agricultural shocks.</p>
+
+                <div class="math-block">
+                    $$ dC = \left( p_{margin} (\beta P) - c F - (u_s + u_e) C + D_C \frac{\partial^2 C}{\partial x^2} \right) dt + \sigma_C C dW_C $$
+                </div>
+                <p class="content-text text-sm text-center text-slate-500 -mt-6 mb-8"><strong>Spatial Capital Flow:</strong> Simulates financial wealth flowing back to agrarian hubs (\( D_C \)) while enduring localized economic volatility.</p>
                 
                 <p class="content-text mt-8 border-t border-slate-100 pt-6">
-                    The interactive implementation of these models can be explored within the <strong>Model Playground</strong>, where users can adjust parameters and observe the resulting system dynamics in real time.
+                    The interactive implementation of these models can be explored within the <strong>Playground</strong>, where users can adjust policy parameters and observe the resulting system dynamics in real time.
                 </p>
 
             </div>
