@@ -80,7 +80,7 @@
         }
 
     	.equation { font-size: 1.0em; color: var(--text-dark); font-weight: 500; margin-left: 2px; }
-    	p.subtitle .equation { font-size: 1.1em; display: block; margin-top: 0.85rem; margin-bottom: 0.25rem; }    
+    	p.subtitle .equation { font-size: 1.1em; display: block; margin-top: 0.85rem; margin-bottom: 0.25rem; }   
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(79, 70, 229, 0); } 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); } }
@@ -305,11 +305,11 @@
                         </div>
                         <div class="input-group">
                             <label for="val_del_ct">CT Action Year</label>
-                            <input type="number" id="val_del_ct" value="15" step="1" min="1" max="50">
+                            <input type="number" id="val_del_ct" value="22" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
                             <label for="val_del_nh">NH Action Year</label>
-                            <input type="number" id="val_del_nh" value="25" step="1" min="1" max="50">
+                            <input type="number" id="val_del_nh" value="30" step="1" min="1" max="50">
                         </div>
                     </div>
                     
@@ -454,7 +454,7 @@
             },
             global: { val_global_year: 15, val_global_pre_up: 0.8, val_global_post_up: 0.7 },
             immediate: { val_imm_f_thresh: 1.1, val_imm_n_thresh: 0.4 },
-            delay: { val_del_la: 6, val_del_ct: 14, val_del_nh: 45 }
+            delay: { val_del_la: 6, val_del_ct: 22, val_del_nh: 30 }
         };
 
         function resetDefaults() {
@@ -492,8 +492,8 @@
                         type: 'linear', display: true, position: 'left', title: { display: true, text: yAxisTitle, font: {size: 10} },
                         ticks: { 
                             callback: function(value) { 
-                                let v = Number.isInteger(value) ? value : parseFloat(value.toFixed(4));
-                                return (formatK && window.innerWidth < 768 && Math.abs(v) >= 1000) ? (v / 1000).toFixed(1) + 'k' : v; 
+                                let v = Number(value.toFixed(4));
+                                return (formatK && window.innerWidth < 768 && Math.abs(v) >= 1000) ? (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : v; 
                             }, 
                             font: {size: 10} 
                         }
@@ -523,14 +523,15 @@
             let dsF = [], dsN = [], dsC = [], dsEq = [];
             let annots = {};
 
+            // Shared Global Constants across State Models
             const BASE_POP = 100, BASE_D = 80, BASE_k2 = 0.005;
-            const a_s = 0.35, b_s = 0.05, g_s = 0.02, pm_s = 2.5, c_s = 0.05;
-            const r_s = 0.2, K_s = 1.0, del_s = 0.001, sig_s = 0.1, k1_s = 0.8, mu_s = 0.05;
+            const b_s = 0.05, pm_s = 2.5, c_s = 0.05, mu_s = 0.05;
+            const r_s = 0.25, K_s = 1.0, sig_s = 0.3, k1_s = 0.7;
             
             const stateScenarios = {
-                'LA (High Insec.)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, base_delta: 0.001, color: '#EF4444' },
-                'CT (Avg Insec.)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.16, gamma: 0.05, base_delta: 0.001, color: '#F97316' },
-                'NH (Low Insec.)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.04, base_delta: 0.0002, color: '#10B981' }
+                'LA (High Insec.)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.30, gamma: 0.07, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_la') ? document.getElementById('val_del_la').value : 6), pol: [0.8, 0.05, 0.05], color: '#EF4444' },
+                'CT (Avg Insec.)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.25, gamma: 0.04, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_ct') ? document.getElementById('val_del_ct').value : 22), pol: [0.4, 0.50, 0.10], color: '#F97316' },
+                'NH (Low Insec.)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.03, base_delta: 0.0002, delay: parseFloat(document.getElementById('val_del_nh') ? document.getElementById('val_del_nh').value : 30), pol: [0.5, 0.05, 0.05], color: '#10B981' }
             };
 
             // --- 1. GENERAL MASTER MODEL ---
@@ -548,16 +549,22 @@
                     let t = i * dt;
                     let pF = F[i-1], pN = N[i-1], pC = C[i-1], pEq = Eq[i-1];
 
-                    let up = t < 15 ? up1 : 0.7;
-                    let us = t < 15 ? us1 : 0.1;
-                    let ue = t < 15 ? ue1 : 0.1;
+                    // Strict matching to General Model Python Script (No phase transitions)
+                    let up = up1;
+                    let us = us1;
+                    let ue = ue1;
 
-                    let dF = a * pC * pN * up - b * P - g * pF;
+                    let actual_sales = Math.min(b * P, pF);
+
+                    let dF = a * pC * pN * up - actual_sales - g * pF;
                     let dN = r * pN * (1 - pN / K) - del * pF * up + sig * us;
-                    let dC = pm * (b * P) - c * pF - (us + ue) * pC;
+                    let dC = pm * actual_sales - c * pF - (us + ue) * pC;
                     let dEq = k1 * ue + k2 * Math.max(0, pF - D) - mu * pEq;
 
-                    F[i] = Math.max(0, pF + (dF * dt)); N[i] = Math.max(0, pN + (dN * dt)); C[i] = Math.max(0, pC + (dC * dt)); Eq[i] = Math.max(0, pEq + (dEq * dt));
+                    F[i] = Math.max(0, pF + (dF * dt)); 
+                    N[i] = Math.max(0, pN + (dN * dt)); 
+                    C[i] = Math.max(0, pC + (dC * dt)); 
+                    Eq[i] = Math.min(1.0, Math.max(0, pEq + (dEq * dt)));
                 }
 
                 const arrF = [], arrN = [], arrC = [], arrEq = [];
@@ -569,7 +576,6 @@
                 dsC.push({ label: 'Capital', data: arrC, borderColor: '#D97706', backgroundColor: 'rgba(217,119,6,0.05)', fill: true, pointRadius: 0, tension: 0.2, borderWidth: 2 });
                 dsEq.push({ label: 'Equity', data: arrEq, borderColor: '#7C3AED', backgroundColor: 'rgba(124,58,237,0.05)', fill: true, pointRadius: 0, tension: 0.2, borderWidth: 2 });
 
-                annots['shift'] = { type: 'line', xMin: 15, xMax: 15, borderColor: 'gray', borderWidth: 2, borderDash: [4, 4], label: { content: 'Policy Shift', display: true, position: 'start', backgroundColor: 'rgba(0,0,0,0.6)', font:{size: 10} } };
             }
 
             // --- SCENARIO LOOPS ---
@@ -582,10 +588,6 @@
                 } else if(mode==='immediate') {
                     fThr = parseFloat(document.getElementById('val_imm_f_thresh').value);
                     nThr = parseFloat(document.getElementById('val_imm_n_thresh').value);
-                } else if (mode==='delay') {
-                    stateScenarios['LA (High Insec.)'].intervention_year = parseFloat(document.getElementById('val_del_la').value);
-                    stateScenarios['CT (Avg Insec.)'].intervention_year = parseFloat(document.getElementById('val_del_ct').value);
-                    stateScenarios['NH (Low Insec.)'].intervention_year = parseFloat(document.getElementById('val_del_nh').value);
                 }
 
                 let triggerCount = 0;
@@ -602,24 +604,29 @@
                         let up, us, ue;
 
                         if (mode === 'global') {
-                            up = t < pYear ? preUp : postUp; us = t < pYear ? 0.05 : 0.1; ue = t < pYear ? 0.05 : 0.1;
+                            up = t < pYear ? preUp : postUp; us = t < pYear ? 0.02 : 0.1; ue = t < pYear ? 0.02 : 0.1;
                         } else if (mode === 'immediate') {
-                            up = 0.8; us = 0.05; ue = 0.05; let isC = false;
-                            if (pF < D * fThr) { up = 0.8; us = 0.1; ue = 0.1; isC = true; }
+                            up = 0.7; us = 0.02; ue = 0.02; let isC = false;
+                            if (pF < D * fThr) { up = 0.8; us = 0.05; ue = 0.05; isC = true; }
                             else if (pN < nThr) { up = 0.4; us = 0.5; ue = 0.1; isC = true; }
                             else if (pC < 20.0 * scl) { up = 0.6; us = 0.2; ue = 0.2; isC = true; }
                             if (isC && !polTrig) { polTrig = true; trigYr = t; }
                         } else if (mode === 'delay') {
-                            if (t < p.intervention_year) { up = 0.8; us = 0.05; ue = 0.05; }
-                            else { up = 0.8; us = 0.1; ue = 0.1; if(!polTrig){ polTrig=true; trigYr=t; } }
+                            if (t < p.delay) { up = 0.7; us = 0.02; ue = 0.02; }
+                            else { up = p.pol[0]; us = p.pol[1]; ue = p.pol[2]; if(!polTrig){ polTrig=true; trigYr=t; } }
                         }
 
-                        let dF = p.alpha * pC * pN * up - b_s * p.pop - p.gamma * pF;
+                        let actual_sales = Math.min(b_s * p.pop, pF);
+
+                        let dF = p.alpha * pC * pN * up - actual_sales - p.gamma * pF;
                         let dN = r_s * pN * (1 - pN / K_s) - del * pF * up + sig_s * us;
-                        let dC = pm_s * (b_s * p.pop) - c_s * pF - (us + ue) * pC;
+                        let dC = pm_s * actual_sales - c_s * pF - (us + ue) * pC;
                         let dEq = k1_s * ue + k2 * Math.max(0, pF - D) - mu_s * pEq;
 
-                        F[i] = Math.max(0, pF + (dF * dt)); N[i] = Math.max(0, pN + (dN * dt)); C[i] = Math.max(0, pC + (dC * dt)); Eq[i] = Math.max(0, pEq + (dEq * dt));
+                        F[i] = Math.max(0, pF + (dF * dt)); 
+                        N[i] = Math.max(0, pN + (dN * dt)); 
+                        C[i] = Math.max(0, pC + (dC * dt)); 
+                        Eq[i] = Math.min(1.0, Math.max(0, pEq + (dEq * dt)));
                     }
                     
                     const aF = [], aN = [], aC = [], aEq = [];
@@ -639,9 +646,9 @@
             }
 
             let isState = mode !== 'general';
-            buildSubplot('F', 'Food Production Dynamics', dsF, isState ? 'Food (Millions)' : 'Biomass', true, annots);
-            buildSubplot('N', 'Natural Resource Health', dsN, 'Health (0 to 1)', false, annots);
-            buildSubplot('C', 'Economic Capital', dsC, isState ? 'Capital (Millions)' : 'Wealth', true, annots);
+            buildSubplot('F', 'Food Production Dynamics', dsF, isState ? 'Food (Millions)' : 'Total Food / Biomass', true, annots);
+            buildSubplot('N', 'Natural Resource Health', dsN, 'Health Index (0 to 1)', false, annots);
+            buildSubplot('C', 'Economic Capital', dsC, isState ? 'Capital (Millions)' : 'Capital (Wealth)', true, annots);
             buildSubplot('Eq', 'Equity Index', dsEq, 'Equity (0 to 1)', false, annots);
         }
 
