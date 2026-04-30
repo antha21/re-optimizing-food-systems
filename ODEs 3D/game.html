@@ -260,13 +260,13 @@ function playSpatialSound(audioObj, dist) {
 
 // ================= ODE LEVEL DATA & FORMATTING =================
 const LEVEL_DATA = {
-    1: { target: ["dF/dt", "=", "\\alpha", "C", "N", "u_p", "-", "\\beta", "P", "-", "\\gamma", "F"], color: "#0055ff", spawn: {x: 2.5, y: 2.5},
+    1: { target: ["dF/dt", "=", "\\alpha", "C", "N", "u_p", "-", "min(\\beta P, F)", "-", "\\gamma", "F"], color: "#0055ff", spawn: {x: 2.5, y: 2.5},
          theme: { skyTop: "#5abbff", skyBot: "#e0f2ff", floorTop: "#99a0a8", floorBot: "#c0c8d0", wallBase: "#e8edf5", wallLine: "#c0cadd", wallIndent: "#d0d8e5" },
          music: "Time%20Square%20-%20Blinx%20the%20Time%20Sweeper%20Soundtrack.mp3"},
     2: { target: ["dN/dt", "=", "r", "N", "(", "1", "-", "N/K", ")", "-", "\\delta", "F", "u_p", "+", "\\sigma", "u_s"], color: "#00aaff", spawn: {x: 1.5, y: 1.5},
          theme: { skyTop: "#0a2a1a", skyBot: "#1a4a2a", floorTop: "#1f3d1f", floorBot: "#2a5c2a", wallBase: "#2c4c2c", wallLine: "#1a3a1a", wallIndent: "#3c5c3c" },
          music: "Untitled%20(2).mp3" },
-    3: { target: ["dC/dt", "=", "p_margin", "(", "\\beta", "P", ")", "-", "c", "F", "-", "(", "u_s", "+", "u_e", ")", "C"], color: "#ff8800", spawn: {x: 2.5, y: 2.5},
+    3: { target: ["dC/dt", "=", "p_margin", "(", "min(\\beta P, F)", ")", "-", "c", "F", "-", "(", "u_s", "+", "u_e", ")", "C"], color: "#ff8800", spawn: {x: 2.5, y: 2.5},
          theme: { skyTop: "#000000", skyBot: "#111122", floorTop: "#222222", floorBot: "#111111", wallBase: "#333344", wallLine: "#222233", wallIndent: "#444455" },
          music: "Subway%20Gravestones.mp3"},
     4: { target: ["dEq/dt", "=", "k_1", "u_e", "+", "k_2", "max(0, F-D)", "-", "\\mu", "Eq"], color: "#aa00ff", spawn: {x: 12.5, y: 21.5},
