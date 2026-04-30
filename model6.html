@@ -78,7 +78,7 @@
         }
 
     	.equation { font-size: 1.0em; color: var(--text-dark); font-weight: 500; margin-left: 2px; }
-    	p.subtitle .equation { font-size: 1.0em; display: block; margin-top: 0.85rem; margin-bottom: 0.25rem; }    
+    	p.subtitle .equation { font-size: 1.0em; display: block; margin-top: 0.85rem; margin-bottom: 0.25rem; }   
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
@@ -126,7 +126,7 @@
             background-color: var(--panel-bg); border: 1px solid #E2E8F0; border-radius: 12px; 
             padding: 0; 
             box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); transition: box-shadow 0.3s ease; 
-            height: 700px; width: 100%; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden;
+            height: 500px; width: 100%; max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden;
         }
         .chart-box:hover { box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.1); }
         
@@ -169,7 +169,7 @@
             .params-grid { grid-template-columns: 1fr; } 
             .scenario-bar { flex-direction: column; align-items: flex-start; gap: 0.75rem;}
             .scenario-bar select { width: 100%; }
-            .chart-box { height: 500px !important; width: 100% !important; }
+            .chart-box { height: 400px !important; width: 100% !important; }
             footer { height: auto !important; line-height: 1.5 !important; padding: 1rem !important; font-size: 0.75rem !important; }
         }
     </style>
@@ -222,8 +222,8 @@
                      <h2>SPDE Stochastic Spatial Dynamics</h2>
                     <p class="subtitle">
                         Adjust the parameters below to simulate a Stochastic Partial Differential Equation integrating spatial food diffusion and random market volatility. The 3D surface updates based on:
-                        <span class="equation">\( dF = \left( \alpha C N u_p - \beta P - \gamma F + D_F \frac{\partial^2 F}{\partial x^2} \right) dt + \sigma_F F dW_F \)</span>
-                        <span class="equation">\( dC = \left( p_{margin}(\beta P) - c F - (u_s + u_e)C + D_C \frac{\partial^2 C}{\partial x^2} \right) dt + \sigma_C C dW_C \)</span>
+                        <span class="equation">\( dF = \left( \alpha C N u_p - \min(\beta P, F) - \gamma F + D_F \frac{\partial^2 F}{\partial x^2} \right) dt + \sigma_F F dW_F \)</span>
+                        <span class="equation">\( dC = \left( p_{margin}\min(\beta P, F) - c F - (u_s + u_e)C + D_C \frac{\partial^2 C}{\partial x^2} \right) dt + \sigma_C C dW_C \)</span>
                     </p>
                 </div>
             </div>
@@ -252,14 +252,14 @@
                         
                         <div class="param-category" style="grid-column: span 2;">Policy Parameters</div>
                         <div class="input-group"><label for="val_up">Prod. Effort \(u_p\)</label><input type="number" id="val_up" value="1.0" step="0.05"></div>
-                        <div class="input-group"><label for="val_us">Sust. Effort \(u_s\)</label><input type="number" id="val_us" value="0.01" step="0.01"></div>
-                        <div class="input-group"><label for="val_ue">Equit. Effort \(u_e\)</label><input type="number" id="val_ue" value="0.01" step="0.01"></div>
+                        <div class="input-group"><label for="val_us">Sust. Effort \(u_s\)</label><input type="number" id="val_us" value="0.02" step="0.01"></div>
+                        <div class="input-group"><label for="val_ue">Equit. Effort \(u_e\)</label><input type="number" id="val_ue" value="0.02" step="0.01"></div>
 
-                        <div class="param-category" style="grid-column: span 2;">Spatial & Stochastic Constants</div>
+                        <div class="param-category" style="grid-column: span 2;">Spatial & Stochastic</div>
                         <div class="input-group"><label for="val_df">Food Diff. \(D_F\)</label><input type="number" id="val_df" value="5.0" step="0.5"></div>
                         <div class="input-group"><label for="val_sigmaf">Food Vol. \(\sigma_F\)</label><input type="number" id="val_sigmaf" value="0.15" step="0.01"></div>
                         <div class="input-group"><label for="val_dc">Cap. Diff. \(D_C\)</label><input type="number" id="val_dc" value="2.0" step="0.5"></div>
-                        <div class="input-group"><label for="val_sigmac">Cap. Vol. \(\sigma_C\)</label><input type="number" id="val_sigmac" value="0.10" step="0.01"></div>
+                        <div class="input-group"><label for="val_sigmac">Cap. Vol. \(\sigma_C\)</label><input type="number" id="val_sigmac" value="0.05" step="0.01"></div>
 
                     </div>
                     
@@ -268,27 +268,29 @@
                 </div>
                 
                 <div class="visualizer">
-                    <div class="chart-box" id="main-chart-box">
-                        <div class="chart-container" id="plotly-container">
-                            </div>
+                    <div class="chart-box">
+                        <div class="chart-container" id="plotly-food"></div>
+                    </div>
+                    <div class="chart-box" style="margin-top: 1.5rem;">
+                        <div class="chart-container" id="plotly-capital"></div>
+                    </div>
                         
-                        <div class="chart-toolbar">
-                            <button class="tool-btn active" id="panBtn" onclick="togglePan('panBtn')" title="Toggle Pan/Orbit">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path></svg>
-                            </button>
-                            <button class="tool-btn" onclick="customZoom(0.8)" title="Zoom In">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
-                            </button>
-                            <button class="tool-btn" onclick="customZoom(1.2)" title="Zoom Out">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
-                            </button>
-                            <button class="tool-btn" onclick="resetCustomZoom()" title="Reset View">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            </button>
-                            <button class="tool-btn" onclick="downloadChart('spde_simulation.png')" title="Download Image">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                        </div>
+                    <div class="chart-toolbar">
+                        <button class="tool-btn active" id="panBtn" onclick="togglePan('panBtn')" title="Toggle Pan/Orbit">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"></path></svg>
+                        </button>
+                        <button class="tool-btn" onclick="customZoom(0.8)" title="Zoom In">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                        </button>
+                        <button class="tool-btn" onclick="customZoom(1.2)" title="Zoom Out">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path></svg>
+                        </button>
+                        <button class="tool-btn" onclick="resetCustomZoom()" title="Reset View">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </button>
+                        <button class="tool-btn" onclick="downloadCharts()" title="Download Images">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -310,8 +312,8 @@
 
         const defaultValues = {
             val_alpha: 0.35, val_beta: 0.05, val_gamma: 0.02, val_pop: 100, 
-            val_pmargin: 2.5, val_c: 0.05, val_up: 1.0, val_us: 0.01, val_ue: 0.01,
-            val_df: 5.0, val_sigmaf: 0.15, val_dc: 2.0, val_sigmac: 0.10
+            val_pmargin: 2.5, val_c: 0.05, val_up: 1.0, val_us: 0.02, val_ue: 0.02,
+            val_df: 5.0, val_sigmaf: 0.15, val_dc: 2.0, val_sigmac: 0.05
         };
 
         function resetDefaults() {
@@ -323,43 +325,55 @@
             resetCustomZoom();
         }
 
-        // Custom Toolbar Plotly Camera Interactivity
+        const plotContainers = ['plotly-food', 'plotly-capital'];
+
         function togglePan(btnId) {
             let btn = document.getElementById(btnId);
-            let gd = document.getElementById('plotly-container');
-            if(!gd._fullLayout) return;
+            let isActive = false;
             
-            let currentMode = gd._fullLayout.scene.dragmode;
-            let newMode = currentMode === 'pan' ? 'orbit' : 'pan';
-            Plotly.relayout(gd, {'scene.dragmode': newMode});
-            
-            if (newMode === 'pan') btn.classList.add('active'); 
+            plotContainers.forEach(id => {
+                let gd = document.getElementById(id);
+                if(!gd._fullLayout) return;
+                
+                let currentMode = gd._fullLayout.scene.dragmode;
+                let newMode = currentMode === 'pan' ? 'orbit' : 'pan';
+                Plotly.relayout(gd, {'scene.dragmode': newMode});
+                
+                if (newMode === 'pan') isActive = true;
+            });
+
+            if (isActive) btn.classList.add('active'); 
             else btn.classList.remove('active');
         }
 
         function customZoom(factor) {
-            let gd = document.getElementById('plotly-container');
-            if(!gd._fullLayout) return;
-            let cam = gd._fullLayout.scene.camera;
-            Plotly.relayout(gd, {'scene.camera': {
-                eye: {x: cam.eye.x * factor, y: cam.eye.y * factor, z: cam.eye.z * factor},
-                center: cam.center,
-                up: cam.up
-            }});
+            plotContainers.forEach(id => {
+                let gd = document.getElementById(id);
+                if(!gd._fullLayout) return;
+                let cam = gd._fullLayout.scene.camera;
+                Plotly.relayout(gd, {'scene.camera': {
+                    eye: {x: cam.eye.x * factor, y: cam.eye.y * factor, z: cam.eye.z * factor},
+                    center: cam.center,
+                    up: cam.up
+                }});
+            });
         }
 
         function resetCustomZoom() {
-            let gd = document.getElementById('plotly-container');
-            if(!gd._fullLayout) return;
-            Plotly.relayout(gd, {'scene.camera': { eye: { x: -1.5, y: -1.5, z: 0.8 } }});
+            plotContainers.forEach(id => {
+                let gd = document.getElementById(id);
+                if(!gd._fullLayout) return;
+                Plotly.relayout(gd, {'scene.camera': { eye: { x: -1.5, y: -1.5, z: 0.8 } }});
+            });
         }
 
-        function downloadChart(filename) {
-            let gd = document.getElementById('plotly-container');
-            Plotly.downloadImage(gd, {format: 'png', filename: filename.replace('.png', ''), width: 1000, height: 700});
+        function downloadCharts() {
+            Plotly.downloadImage(document.getElementById('plotly-food'), {format: 'png', filename: 'spde_food_dynamics', width: 1000, height: 700});
+            setTimeout(() => {
+                Plotly.downloadImage(document.getElementById('plotly-capital'), {format: 'png', filename: 'spde_capital_dynamics', width: 1000, height: 700});
+            }, 500);
         }
 
-        // Standard Box-Muller transform to generate Gaussian White Noise
         function generateGaussian() {
             let u = 0, v = 0;
             while(u === 0) u = Math.random();
@@ -387,7 +401,7 @@
 
             // Spatial Grid Parameters 
             const L = 100.0;
-            const nx = 60; 
+            const nx = 100; 
             const dx = L / (nx - 1);
             const x = Array.from({length: nx}, (_, i) => i * dx);
 
@@ -396,119 +410,136 @@
             const dt = 0.005;
             const nt = Math.floor(T / dt); 
             
-            // Render arrays (We downsample time so Plotly doesn't crash the browser)
-            const render_step = Math.floor(nt / 80); 
+            const render_step = Math.floor(nt / 100); 
             
-            let z_data = []; // Will hold the 2D array for Plotly surface
-            let y_time = []; // Time labels
+            let z_data_F = []; 
+            let z_data_C = [];
+            let y_time = []; 
             
-            // Current states
             let F = new Array(nx).fill(0);
-            let C = new Array(nx).fill(50.0);
-            let N = new Array(nx).fill(0.8); // Assumed uniform static baseline for this projection
+            let C = new Array(nx).fill(0);
+            let N = new Array(nx).fill(0.8);
 
-            // Initial "Breadbasket" Conditions for Food
             for (let j = 0; j < nx; j++) {
                 F[j] = 20 + 80 * Math.exp(-0.05 * Math.pow(x[j] - L/2, 2));
+                C[j] = 80 - 60 * Math.exp(-0.05 * Math.pow(x[j] - L/2, 2));
             }
 
-            z_data.push([...F]);
+            z_data_F.push([...F]);
+            z_data_C.push([...C]);
             y_time.push(0);
 
-            // Euler-Maruyama Integration Loop
+            // Euler-Maruyama Integration Loop for the SPDE
             for (let i = 1; i < nt; i++) {
                 let F_new = new Array(nx).fill(0);
                 let C_new = new Array(nx).fill(0);
-                let laplacian_F = new Array(nx).fill(0);
-                let laplacian_C = new Array(nx).fill(0);
+                let lap_F = new Array(nx).fill(0);
+                let lap_C = new Array(nx).fill(0);
 
                 // Central Finite Difference for interior points
                 for (let j = 1; j < nx - 1; j++) {
-                    laplacian_F[j] = (F[j+1] - 2 * F[j] + F[j-1]) / (dx * dx);
-                    laplacian_C[j] = (C[j+1] - 2 * C[j] + C[j-1]) / (dx * dx);
+                    lap_F[j] = (F[j+1] - 2 * F[j] + F[j-1]) / (dx * dx);
+                    lap_C[j] = (C[j+1] - 2 * C[j] + C[j-1]) / (dx * dx);
                 }
                 
                 // Neumann Boundary Conditions (Zero-flux)
-                laplacian_F[0] = (F[1] - F[0]) / (dx * dx);
-                laplacian_F[nx-1] = (F[nx-2] - F[nx-1]) / (dx * dx);
-                
-                laplacian_C[0] = (C[1] - C[0]) / (dx * dx);
-                laplacian_C[nx-1] = (C[nx-2] - C[nx-1]) / (dx * dx);
+                lap_F[0] = (F[1] - F[0]) / (dx * dx);
+                lap_F[nx-1] = (F[nx-2] - F[nx-1]) / (dx * dx);
+                lap_C[0] = (C[1] - C[0]) / (dx * dx);
+                lap_C[nx-1] = (C[nx-2] - C[nx-1]) / (dx * dx);
 
-                // Update Rule
                 for (let j = 0; j < nx; j++) {
                     let dW_F = generateGaussian() * Math.sqrt(dt);
                     let dW_C = generateGaussian() * Math.sqrt(dt);
 
-                    let drift_F = alpha * C[j] * N[j] * up - beta * P - gamma * F[j] + D_F * laplacian_F[j];
-                    let diffusion_F = sigma_F * F[j] * dW_F;
+                    let actual_sales = Math.min(beta * P, F[j]);
                     
-                    let drift_C = pmargin * (beta * P) - c * F[j] - (us + ue) * C[j] + D_C * laplacian_C[j];
+                    let drift_F = alpha * C[j] * N[j] * up - actual_sales - gamma * F[j] + D_F * lap_F[j];
+                    let drift_C = pmargin * actual_sales - c * F[j] - (us + ue) * C[j] + D_C * lap_C[j];
+                    
+                    let diffusion_F = sigma_F * F[j] * dW_F;
                     let diffusion_C = sigma_C * C[j] * dW_C;
                     
-                    F_new[j] = F[j] + drift_F * dt + diffusion_F;
-                    C_new[j] = C[j] + drift_C * dt + diffusion_C;
-                    
-                    // Boundary enforcement
-                    if (F_new[j] < 0) F_new[j] = 0; 
-                    if (C_new[j] < 0) C_new[j] = 0;
+                    F_new[j] = Math.max(0, F[j] + drift_F * dt + diffusion_F);
+                    C_new[j] = Math.max(0, C[j] + drift_C * dt + diffusion_C);
                 }
                 
                 F = F_new;
                 C = C_new;
 
-                // Save downsampled frames for plotting
                 if (i % render_step === 0) {
-                    z_data.push([...F]);
+                    z_data_F.push([...F]);
+                    z_data_C.push([...C]);
                     y_time.push(parseFloat((i * dt).toFixed(2)));
                 }
             }
 
-            // Plotly Configuration
-            var data = [{
-                z: z_data,
-                x: x,        // Spatial Distance
-                y: y_time,   // Time
-                type: 'surface',
-                colorscale: 'Viridis',
-                colorbar: { title: 'Food Concentration', len: 0.8, thickness: 20 },
-                hovertemplate: 'Distance: %{x} mi<br>Time: %{y} yrs<br>Food: %{z:.2f}<extra></extra>'
-            }];
-
-            var layout = {
-                title: {
-                    text: 'Food Biomass SPDE with Capital Stochasticity',
-                    font: { family: 'Inter', size: 16, color: '#0F172A', weight: 'bold' }
-                },
+            const baseLayout = {
                 autosize: true,
                 margin: { l: 0, r: 0, b: 0, t: 50 },
-                scene: {
-                    xaxis: { title: 'Spatial Distance (Miles)', titlefont: { size: 12 }, tickfont: { size: 10 } },
-                    yaxis: { title: 'Time (Years)', titlefont: { size: 12 }, tickfont: { size: 10 } },
-                    zaxis: { title: 'Local Food Biomass', titlefont: { size: 12 }, tickfont: { size: 10 } },
-                    camera: {
-                        eye: { x: -1.5, y: -1.5, z: 0.8 } 
-                    },
-                    dragmode: 'orbit'
-                },
                 paper_bgcolor: '#FFFFFF',
                 plot_bgcolor: '#FFFFFF'
             };
 
-            var config = {
+            const config = {
                 responsive: true,
-                displayModeBar: false, // Hidden to use your custom CSS Toolbar instead
+                displayModeBar: false, 
                 displaylogo: false
             };
 
-            // Capture current camera angle before redrawing to prevent jumping
-            let gd = document.getElementById('plotly-container');
-            if (gd._fullLayout) {
-                layout.scene.camera = gd._fullLayout.scene.camera;
-            }
+            // ---- FOOD PLOT ----
+            let dataF = [{
+                z: z_data_F, x: x, y: y_time, type: 'surface', colorscale: 'Viridis',
+                colorbar: { title: 'Food Concentration', len: 0.8, thickness: 20, tickformat: '.1f' },
+                hovertemplate: 'Distance: %{x:.1f} mi<br>Time: %{y:.1f} yrs<br>Food: %{z:.2f}<extra></extra>'
+            }];
 
-            Plotly.react('plotly-container', data, layout, config);
+            let layoutF = {
+                ...baseLayout,
+                title: { text: 'SPDE Simulation: Food Diffusion with Stochastic Market Shocks', font: { family: 'Inter', size: 16, color: '#0F172A', weight: 'bold' } },
+                scene: {
+                    xaxis: { title: 'Spatial Distance (Miles)', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    yaxis: { title: 'Time (Years)', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    zaxis: { title: 'Local Food Biomass', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    camera: { eye: { x: -1.5, y: -1.5, z: 0.8 } },
+                    dragmode: 'orbit'
+                }
+            };
+
+            let gdF = document.getElementById('plotly-food');
+            if (gdF._fullLayout) { layoutF.scene.camera = gdF._fullLayout.scene.camera; }
+            Plotly.react('plotly-food', dataF, layoutF, config);
+
+            // ---- CAPITAL PLOT ----
+            let dataC = [{
+                z: z_data_C, x: x, y: y_time, type: 'surface', colorscale: 'Plasma',
+                colorbar: { title: 'Capital Concentration', len: 0.8, thickness: 20, tickformat: '.1f' },
+                hovertemplate: 'Distance: %{x:.1f} mi<br>Time: %{y:.1f} yrs<br>Capital: %{z:.2f}<extra></extra>'
+            }];
+
+            let layoutC = {
+                ...baseLayout,
+                title: { text: 'SPDE Simulation: Capital Diffusion Flowing Inward', font: { family: 'Inter', size: 16, color: '#0F172A', weight: 'bold' } },
+                scene: {
+                    xaxis: { title: 'Spatial Distance (Miles)', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    yaxis: { title: 'Time (Years)', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    zaxis: { title: 'Local Capital (Wealth)', titlefont: { size: 12 }, tickfont: { size: 10 }, tickformat: '.1f' },
+                    camera: { eye: { x: -1.5, y: -1.5, z: 0.8 } },
+                    dragmode: 'orbit'
+                }
+            };
+
+            let gdC = document.getElementById('plotly-capital');
+            if (gdC._fullLayout) { layoutC.scene.camera = gdC._fullLayout.scene.camera; }
+            Plotly.react('plotly-capital', dataC, layoutC, config);
         }
+        
+        window.addEventListener('resize', function() {
+            plotContainers.forEach(id => {
+                let gd = document.getElementById(id);
+                if(gd) Plotly.Plots.resize(gd);
+            });
+        });
     </script>
 </body>
 </html>
