@@ -93,7 +93,7 @@
     		font-size: 1.15em;
     		display: block;
     		margin-top: 0.85rem;
-   		margin-bottom: 0.25rem;
+   		    margin-bottom: 0.25rem;
     	}   
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
@@ -538,6 +538,7 @@
                 for(let i = 1; i < steps; i++) {
                     let prev_F = F[i-1]; let prev_N = N[i-1]; let prev_C = C[i-1]; let prev_Eq = Eq[i-1];
 
+                    // Uses UI input consistently for the entire timeframe
                     let up = up_gen; 
                     let us = us_gen; 
                     let ue = 0.01;
@@ -795,7 +796,8 @@
                         title: { display: true, text: yAxisTitle },
                         ticks: { 
                             callback: function(value) {
-                                return value;
+                                // Forces numbers cleanly up to 4 decimals to avoid artifacts like 0.9000000001
+                                return Number(value.toFixed(4));
                             },
                             font: { size: window.innerWidth < 768 ? 10 : 12 } 
                         }
