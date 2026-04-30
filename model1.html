@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model 1: Food Production Dynamics Over Time</title>
+    <title>Model 1: Food Production Dynamics Over Time [cite: 1]</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -94,7 +94,7 @@
     		display: block;
     		margin-top: 0.85rem;
    		    margin-bottom: 0.25rem;
-    	}    
+    	}   
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
@@ -272,7 +272,7 @@
                         Food Production Dynamics Model
                      </h2>
                     <p class="subtitle">
-                        Adjust the parameters below to simulate deterministic interactions over a 50-year timeframe. The chart updates instantly based on the differential equation: <span class="equation">\( \frac{dF}{dt} = \alpha \cdot C \cdot N \cdot u_p - \beta \cdot P - \gamma \cdot F \)</span>
+                        Adjust the parameters below to simulate deterministic interactions over a 50-year timeframe. The chart updates instantly based on the differential equation: <span class="equation">\( \frac{dF}{dt} = \alpha \cdot C \cdot N \cdot u_p - \min(\beta \cdot P, F) - \gamma \cdot F \)</span>
                     </p>
                 </div>
             </div>
@@ -334,7 +334,7 @@
                         </div>
                         <div class="input-group">
                             <label for="val_global_pre_up">Pre-Policy <span class="equation">\(u_p\)</span></label>
-                            <input type="number" id="val_global_pre_up" value="0.8" step="0.1" max="1">
+                            <input type="number" id="val_global_pre_up" value="1.0" step="0.1" max="1">
                         </div>
                         <div class="input-group">
                             <label for="val_global_post_up">Post-Policy <span class="equation">\(u_p\)</span></label>
@@ -363,11 +363,11 @@
                         </div>
                         <div class="input-group">
                             <label for="val_del_ct">CT Action Year</label>
-                            <input type="number" id="val_del_ct" value="15" step="1" min="1" max="50">
+                            <input type="number" id="val_del_ct" value="22" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
                             <label for="val_del_nh">NH Action Year</label>
-                            <input type="number" id="val_del_nh" value="25" step="1" min="1" max="50">
+                            <input type="number" id="val_del_nh" value="30" step="1" min="1" max="50">
                         </div>
                     </div>
                     
@@ -404,7 +404,7 @@
     </div>
     
     <footer>
-        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved.
+        &copy; 2026 Anthony Artino and Sarah Decipeda. All Rights Reserved. [cite: 3]
     </footer>
 
     <script>
@@ -469,9 +469,9 @@
 
         const defaultValues = {
             general: { val_f0: 100, val_c0: 30, val_n0: 0.9, val_up: 1.0, val_alpha: 0.35, val_beta: 0.05, val_gamma: 0.02, val_pop: 100 },
-            global: { val_global_year: 15, val_global_pre_up: 0.8, val_global_post_up: 0.7 },
+            global: { val_global_year: 15, val_global_pre_up: 1.0, val_global_post_up: 0.7 },
             immediate: { val_imm_f_thresh: 1.1, val_imm_n_thresh: 0.4 },
-            delay: { val_del_la: 6, val_del_ct: 14, val_del_nh: 45 }
+            delay: { val_del_la: 6, val_del_ct: 22, val_del_nh: 30 }
         };
 
         function resetDefaults() {
@@ -501,14 +501,23 @@
             let chartAnnotations = {};
             let yAxisTitle = 'Total Food / Biomass';
 
-            // Base Python parameters utilized across the 3 State Scenario Models
+            // Base Python parameters utilized across the models
             const BASE_POP = 100, BASE_D = 80, BASE_k2 = 0.005;
-            const beta = 0.05, r = 0.2, K = 1.0, sigma = 0.1, p_margin = 2.5, c = 0.05, k1 = 0.8, mu = 0.05;
             
+            // Recalibrated parameters according to the revised frameworks
+            const beta = 0.05, p_margin = 2.5, c = 0.05, mu = 0.05; 
+            // Note: 'c' represents the cost per unit effort to maintain constancy
+            
+            // General model parameters
+            const r_gen = 0.2, K = 1.0, sigma_gen = 0.1, k1_gen = 0.8;
+            
+            // State scenario specific parameters
+            const r_state = 0.25, sigma_state = 0.3, k1_state = 0.7;
+
             const stateScenarios = {
-                'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, base_delta: 0.001, color: '#EF4444' },
-                'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.16, gamma: 0.05, base_delta: 0.001, color: '#F97316' },
-                'New Hampshire (Low Insecurity)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.04, base_delta: 0.0002, color: '#10B981' }
+                'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.30, gamma: 0.07, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_la') ? document.getElementById('val_del_la').value : 6), pol: [0.8, 0.05, 0.05], color: '#EF4444' },
+                'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.25, gamma: 0.04, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_ct') ? document.getElementById('val_del_ct').value : 22), pol: [0.4, 0.50, 0.10], color: '#F97316' },
+                'New Hampshire (Low Insecurity)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.03, base_delta: 0.0002, delay: parseFloat(document.getElementById('val_del_nh') ? document.getElementById('val_del_nh').value : 30), pol: [0.5, 0.05, 0.05], color: '#10B981' }
             };
 
             // --- OPTION 1: GENERAL MODEL ---
@@ -529,16 +538,17 @@
 
                 for(let i = 1; i < steps; i++) {
                     let prev_F = F[i-1]; let prev_N = N[i-1]; let prev_C = C[i-1]; let prev_Eq = Eq[i-1];
+                    let actual_sales = Math.min(beta_gen * P_gen, prev_F);
 
-                    let dF = alpha_gen * prev_C * prev_N * up_val - beta_gen * P_gen - gamma_gen * prev_F;
-                    let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up_val + sigma * us;
-                    let dC = p_margin * (beta_gen * P_gen) - c * prev_F - (us + ue) * prev_C;
-                    let dEq = k1 * ue + BASE_k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                    let dF = alpha_gen * prev_C * prev_N * up_val - actual_sales - gamma_gen * prev_F;
+                    let dN = r_gen * prev_N * (1 - prev_N / K) - delta * prev_F * up_val + sigma_gen * us;
+                    let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                    let dEq = k1_gen * ue + BASE_k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                     F[i] = Math.max(0, prev_F + (dF * dt));
                     N[i] = Math.max(0, prev_N + (dN * dt));
                     C[i] = Math.max(0, prev_C + (dC * dt));
-                    Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                    Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                 }
 
                 const plot_F = [];
@@ -574,20 +584,21 @@
                         let current_time = i * dt;
                         
                         let up = current_time < policyYear ? pre_up : post_up;
-                        let us = current_time < policyYear ? 0.05 : 0.1;
-                        let ue = current_time < policyYear ? 0.05 : 0.1;
+                        let us = current_time < policyYear ? 0.01 : 0.1;
+                        let ue = current_time < policyYear ? 0.01 : 0.1;
 
                         let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
                         
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_F = [];
@@ -629,11 +640,11 @@
 
                     for(let i = 1; i < steps; i++) {
                         let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
-                        let up = 0.8, us = 0.05, ue = 0.05; 
+                        let up = 0.7, us = 0.02, ue = 0.02; 
                         let is_crisis = false;
                     
                         if (prev_F < D * f_thresh) {
-                            up = 0.8; us = 0.1; ue = 0.1; is_crisis = true;
+                            up = 0.8; us = 0.05; ue = 0.05; is_crisis = true;
                         } else if (prev_N < n_thresh) {
                             up = 0.4; us = 0.5; ue = 0.1; is_crisis = true;
                         } else if (prev_C < 20.0 * scale) {
@@ -645,15 +656,17 @@
                             trigger_year = i * dt;
                         }
 
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
+
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_F = [];
@@ -679,10 +692,6 @@
             // --- OPTION 4: POLITICAL DELAY ---
             else if (mode === 'delay') {
                 yAxisTitle = 'Total Food (Millions)';
-                stateScenarios['Louisiana (High Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_la').value);
-                stateScenarios['Connecticut (Avg Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_ct').value);
-                stateScenarios['New Hampshire (Low Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_nh').value);
-
                 let triggerCount = 0;
 
                 for (const [name, params] of Object.entries(stateScenarios)) {
@@ -690,7 +699,7 @@
                     let D = BASE_D * scale;
                     let delta = params.base_delta / scale;
                     let k2 = BASE_k2 / scale;
-                    let target_year = params.intervention_year;
+                    let target_year = params.delay;
 
                     const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
                     F[0] = params.base_y0[0] * scale; N[0] = params.base_y0[1]; C[0] = params.base_y0[2] * scale; Eq[0] = params.base_y0[3];
@@ -704,24 +713,26 @@
                         let up, us, ue;
 
                         if (current_time < target_year) {
-                            up = 0.8; us = 0.05; ue = 0.05;
+                            up = 0.7; us = 0.02; ue = 0.02;
                         } else {
-                            up = 0.8; us = 0.10; ue = 0.10; 
+                            up = params.pol[0]; us = params.pol[1]; ue = params.pol[2]; 
                             if (!policy_triggered) {
                                 policy_triggered = true;
                                 trigger_year = current_time;
                             }
                         }
                         
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
+
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_F = [];
@@ -797,4 +808,4 @@
         }
     </script>
 </body>
-</html>
+</html>         
