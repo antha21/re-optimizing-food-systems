@@ -90,11 +90,11 @@
     	}
 
     	p.subtitle .equation {
-    		font-size: 1.1em;
+    		font-size: 1.15em;
     		display: block;
     		margin-top: 0.85rem;
-   		    margin-bottom: 0.25rem;
-    	}    
+   		margin-bottom: 0.25rem;
+    	}   
         
         .pulse-dot { width: 8px; height: 8px; background-color: var(--accent-pri); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
@@ -363,11 +363,11 @@
                         </div>
                         <div class="input-group">
                             <label for="val_del_ct">CT Action Year</label>
-                            <input type="number" id="val_del_ct" value="15" step="1" min="1" max="50">
+                            <input type="number" id="val_del_ct" value="22" step="1" min="1" max="50">
                         </div>
                         <div class="input-group">
                             <label for="val_del_nh">NH Action Year</label>
-                            <input type="number" id="val_del_nh" value="25" step="1" min="1" max="50">
+                            <input type="number" id="val_del_nh" value="30" step="1" min="1" max="50">
                         </div>
                     </div>
                     
@@ -469,7 +469,7 @@
             general: { val_n0: 0.9, val_r: 0.2, val_k: 1.0, val_delta: 0.001, val_sigma: 0.1, val_us: 0.01, val_up: 1.0, val_f0: 100 },
             global: { val_global_year: 15, val_global_pre_up: 0.8, val_global_post_up: 0.7 },
             immediate: { val_imm_f_thresh: 1.1, val_imm_n_thresh: 0.4 },
-            delay: { val_del_la: 6, val_del_ct: 14, val_del_nh: 45 }
+            delay: { val_del_la: 6, val_del_ct: 22, val_del_nh: 30 }
         };
 
         function resetDefaults() {
@@ -501,23 +501,30 @@
 
             // Base Background Parameters
             const BASE_POP = 100, BASE_D = 80, BASE_k2 = 0.005;
-            const alpha = 0.35, beta = 0.05, gamma = 0.02, p_margin = 2.5, c = 0.05, k1 = 0.8, mu = 0.05;
+            const beta = 0.05, p_margin = 2.5, c = 0.05, mu = 0.05; 
             
+            // General model parameters
+            const alpha_gen = 0.35, gamma_gen = 0.02;
+            const k1_gen = 0.8;
+            
+            // State scenario specific parameters
+            const r_state = 0.25, K_state = 1.0, sigma_state = 0.3, k1_state = 0.7;
+
             const stateScenarios = {
-                'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.20, gamma: 0.08, base_delta: 0.001, color: '#EF4444' },
-                'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.16, gamma: 0.05, base_delta: 0.001, color: '#F97316' },
-                'New Hampshire (Low Insecurity)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.04, base_delta: 0.0002, color: '#10B981' }
+                'Louisiana (High Insecurity)': { pop: 4600000, base_y0: [40.0, 0.9, 10.0, 0.1], alpha: 0.30, gamma: 0.07, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_la') ? document.getElementById('val_del_la').value : 6), pol: [0.8, 0.05, 0.05], color: '#EF4444' },
+                'Connecticut (Avg Insecurity)': { pop: 3600000, base_y0: [110.0, 0.75, 85.0, 0.40], alpha: 0.25, gamma: 0.04, base_delta: 0.001, delay: parseFloat(document.getElementById('val_del_ct') ? document.getElementById('val_del_ct').value : 22), pol: [0.4, 0.50, 0.10], color: '#F97316' },
+                'New Hampshire (Low Insecurity)': { pop: 1400000, base_y0: [130.0, 0.90, 70.0, 0.85], alpha: 0.28, gamma: 0.03, base_delta: 0.0002, delay: parseFloat(document.getElementById('val_del_nh') ? document.getElementById('val_del_nh').value : 30), pol: [0.5, 0.05, 0.05], color: '#10B981' }
             };
 
             // --- OPTION 1: GENERAL MODEL ---
             if (mode === 'general') {
                 const N0 = parseFloat(document.getElementById('val_n0').value);
-                const r_gen = parseFloat(document.getElementById('val_r').value);
-                const K_gen = parseFloat(document.getElementById('val_k').value);
-                const delta_gen = parseFloat(document.getElementById('val_delta').value);
-                const sigma_gen = parseFloat(document.getElementById('val_sigma').value);
+                const r_input = parseFloat(document.getElementById('val_r').value);
+                const K_input = parseFloat(document.getElementById('val_k').value);
+                const delta_input = parseFloat(document.getElementById('val_delta').value);
+                const sigma_input = parseFloat(document.getElementById('val_sigma').value);
                 
-                // Pull initial Phase 1 variables from the UI (Defaults: 1.0 and 0.01)
+                // Pull initial Phase 1 variables from the UI
                 const us_gen = parseFloat(document.getElementById('val_us').value);
                 const up_gen = parseFloat(document.getElementById('val_up').value);
                 const F0 = parseFloat(document.getElementById('val_f0').value);
@@ -529,32 +536,24 @@
                 F[0] = F0; N[0] = N0; C[0] = C0; Eq[0] = Eq0;
 
                 for(let i = 1; i < steps; i++) {
-                    let current_time = i * dt;
                     let prev_F = F[i-1]; let prev_N = N[i-1]; let prev_C = C[i-1]; let prev_Eq = Eq[i-1];
 
-                    // EXACT PYTHON MATCH: Policy levers shift at year 15
-                    let up, us, ue;
-                    if (current_time < 15) {
-                        up = up_gen; // Uses UI input
-                        us = us_gen; // Uses UI input
-                        ue = 0.01;
-                    } else {
-                        // Phase 2: Interventions for economic/biological balance
-                        up = 0.7; 
-                        us = 0.1; 
-                        ue = 0.1;
-                    }
+                    let up = up_gen; 
+                    let us = us_gen; 
+                    let ue = 0.01;
 
-                    let dF = alpha * prev_C * prev_N * up - beta * BASE_POP - gamma * prev_F;
+                    let actual_sales = Math.min(beta * BASE_POP, prev_F);
+
+                    let dF = alpha_gen * prev_C * prev_N * up - actual_sales - gamma_gen * prev_F;
                     // Primary tracked equation:
-                    let dN = r_gen * prev_N * (1 - prev_N / K_gen) - delta_gen * prev_F * up + sigma_gen * us;
-                    let dC = p_margin * (beta * BASE_POP) - c * prev_F - (us + ue) * prev_C;
-                    let dEq = k1 * ue + BASE_k2 * Math.max(0, prev_F - BASE_D) - mu * prev_Eq;
+                    let dN = r_input * prev_N * (1 - prev_N / K_input) - delta_input * prev_F * up + sigma_input * us;
+                    let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                    let dEq = k1_gen * ue + BASE_k2 * Math.max(0, prev_F - BASE_D) - mu * prev_Eq;
 
                     F[i] = Math.max(0, prev_F + (dF * dt));
                     N[i] = Math.max(0, prev_N + (dN * dt));
                     C[i] = Math.max(0, prev_C + (dC * dt));
-                    Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                    Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                 }
 
                 const plot_N = [];
@@ -565,13 +564,6 @@
                     label: 'Nature Health (Custom Baseline)', data: plot_N, borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.05)',
                     fill: true, yAxisID: 'y', borderWidth: 2, pointRadius: 0, tension: 0.2
                 });
-
-                // Matches the plt.axvline(15) from Python
-                chartAnnotations['baselineShift'] = {
-                    type: 'line', xMin: 15, xMax: 15,
-                    borderColor: 'gray', borderWidth: 2, borderDash: [5, 5],
-                    label: { content: 'Policy Shift', display: true, position: 'start', backgroundColor: 'rgba(0,0,0,0.6)' }
-                };
             }
 
             // --- OPTION 2: GLOBAL POLICY ---
@@ -579,9 +571,6 @@
                 const policyYear = parseFloat(document.getElementById('val_global_year').value);
                 const pre_up = parseFloat(document.getElementById('val_global_pre_up').value);
                 const post_up = parseFloat(document.getElementById('val_global_post_up').value);
-
-                // Default nature variables for global comparisons
-                const r = 0.2, K = 1.0, sigma = 0.1;
 
                 for (const [name, params] of Object.entries(stateScenarios)) {
                     let scale = params.pop / BASE_POP;
@@ -599,20 +588,21 @@
                         let current_time = i * dt;
                         
                         let up = current_time < policyYear ? pre_up : post_up;
-                        let us = current_time < policyYear ? 0.05 : 0.1;
-                        let ue = current_time < policyYear ? 0.05 : 0.1;
+                        let us = current_time < policyYear ? 0.02 : 0.1;
+                        let ue = current_time < policyYear ? 0.02 : 0.1;
 
                         let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
                         
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K_state) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_N = [];
@@ -636,7 +626,6 @@
             else if (mode === 'immediate') {
                 const f_thresh = parseFloat(document.getElementById('val_imm_f_thresh').value);
                 const n_thresh = parseFloat(document.getElementById('val_imm_n_thresh').value);
-                const r = 0.2, K = 1.0, sigma = 0.1;
                 let triggerCount = 0;
 
                 for (const [name, params] of Object.entries(stateScenarios)) {
@@ -653,11 +642,11 @@
 
                     for(let i = 1; i < steps; i++) {
                         let prev_F = F[i-1], prev_N = N[i-1], prev_C = C[i-1], prev_Eq = Eq[i-1];
-                        let up = 0.8, us = 0.05, ue = 0.05; 
+                        let up = 0.7, us = 0.02, ue = 0.02; 
                         let is_crisis = false;
                     
                         if (prev_F < D * f_thresh) {
-                            up = 0.8; us = 0.1; ue = 0.1; is_crisis = true;
+                            up = 0.8; us = 0.05; ue = 0.05; is_crisis = true;
                         } else if (prev_N < n_thresh) {
                             up = 0.4; us = 0.5; ue = 0.1; is_crisis = true;
                         } else if (prev_C < 20.0 * scale) {
@@ -669,15 +658,17 @@
                             trigger_year = i * dt;
                         }
 
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
+
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K_state) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_N = [];
@@ -702,11 +693,10 @@
 
             // --- OPTION 4: POLITICAL DELAY ---
             else if (mode === 'delay') {
-                stateScenarios['Louisiana (High Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_la').value);
-                stateScenarios['Connecticut (Avg Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_ct').value);
-                stateScenarios['New Hampshire (Low Insecurity)'].intervention_year = parseFloat(document.getElementById('val_del_nh').value);
+                stateScenarios['Louisiana (High Insecurity)'].delay = parseFloat(document.getElementById('val_del_la').value);
+                stateScenarios['Connecticut (Avg Insecurity)'].delay = parseFloat(document.getElementById('val_del_ct').value);
+                stateScenarios['New Hampshire (Low Insecurity)'].delay = parseFloat(document.getElementById('val_del_nh').value);
 
-                const r = 0.2, K = 1.0, sigma = 0.1;
                 let triggerCount = 0;
 
                 for (const [name, params] of Object.entries(stateScenarios)) {
@@ -714,7 +704,7 @@
                     let D = BASE_D * scale;
                     let delta = params.base_delta / scale;
                     let k2 = BASE_k2 / scale;
-                    let target_year = params.intervention_year;
+                    let target_year = params.delay;
 
                     const F = new Array(steps); const N = new Array(steps); const C = new Array(steps); const Eq = new Array(steps);
                     F[0] = params.base_y0[0] * scale; N[0] = params.base_y0[1]; C[0] = params.base_y0[2] * scale; Eq[0] = params.base_y0[3];
@@ -728,24 +718,26 @@
                         let up, us, ue;
 
                         if (current_time < target_year) {
-                            up = 0.8; us = 0.05; ue = 0.05;
+                            up = 0.7; us = 0.02; ue = 0.02;
                         } else {
-                            up = 0.8; us = 0.10; ue = 0.10; 
+                            up = params.pol[0]; us = params.pol[1]; ue = params.pol[2]; 
                             if (!policy_triggered) {
                                 policy_triggered = true;
                                 trigger_year = current_time;
                             }
                         }
                         
-                        let dF = params.alpha * prev_C * prev_N * up - beta * params.pop - params.gamma * prev_F;
-                        let dN = r * prev_N * (1 - prev_N / K) - delta * prev_F * up + sigma * us;
-                        let dC = p_margin * (beta * params.pop) - c * prev_F - (us + ue) * prev_C;
-                        let dEq = k1 * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
+                        let actual_sales = Math.min(beta * params.pop, prev_F);
+
+                        let dF = params.alpha * prev_C * prev_N * up - actual_sales - params.gamma * prev_F;
+                        let dN = r_state * prev_N * (1 - prev_N / K_state) - delta * prev_F * up + sigma_state * us;
+                        let dC = p_margin * actual_sales - c * prev_F - (us + ue) * prev_C;
+                        let dEq = k1_state * ue + k2 * Math.max(0, prev_F - D) - mu * prev_Eq;
 
                         F[i] = Math.max(0, prev_F + (dF * dt));
                         N[i] = Math.max(0, prev_N + (dN * dt));
                         C[i] = Math.max(0, prev_C + (dC * dt));
-                        Eq[i] = Math.max(0, prev_Eq + (dEq * dt));
+                        Eq[i] = Math.min(1.0, Math.max(0, prev_Eq + (dEq * dt)));
                     }
                     
                     const plot_N = [];
@@ -803,7 +795,6 @@
                         title: { display: true, text: yAxisTitle },
                         ticks: { 
                             callback: function(value) {
-                                // Removed the "k" format since Nature is an index from 0 to 1
                                 return value;
                             },
                             font: { size: window.innerWidth < 768 ? 10 : 12 } 
