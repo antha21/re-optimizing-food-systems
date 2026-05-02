@@ -15,7 +15,7 @@ By utilizing Ordinary Differential Equations (ODEs) and Stochastic Partial Diffe
 ## Interactive Web Platform (Model Playground)
 This repository hosts a live, interactive "Model Playground" via GitHub Pages. Visitors can directly engage with the simulations, adjusting intervention parameters and viewing real-time systemic outcomes directly in their browser.
 
-**[Link to Live Project Website]**(https://antha21.github.io/Bioeconomic-Models/)
+**[Link to Live Project Website]**(https://antha21.github.io/re-optimizing-food-systems/)
 
 ### The Mathematical Framework
 The interactive models and underlying Python architecture are driven by four linked state variables:
