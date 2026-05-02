@@ -32,7 +32,7 @@ The interactive models and underlying Python architecture are driven by four lin
 
 ---
 
-## Standalone Bonus Section: ODEs 3D
-Included in the Model Playground is **ODEs 3D**, an interactive First-Person Shooter (FPS) and scavenger hunt game. 
+## Standalone Bonus Section: ODE 3D
+Included in the Model Playground is **ODE 3D**, an interactive First-Person Shooter (FPS) and scavenger hunt game. 
 
 *Note: This game is a standalone bonus section independent of the bioeconomic simulations.* It focuses solely on the mathematical mechanics of Ordinary Differential Equations. Players select levels and navigate a 3D environment to solve equation-based challenges.
